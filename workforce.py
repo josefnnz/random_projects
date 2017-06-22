@@ -46,6 +46,8 @@ jobs = mappings.parse("Jobs") # tab containing Aol/Yahoo jobs to Oath jobs
 jobs.columns = ['company','old_job_profile','job_code','job_profile','job_family_grp','job_family','job_category_sort_order',\
                 'job_category','job_level','mgmt_level','eeo_job_classification','aap_job_classification','pay_rate_type',\
                 'is_exempt','comp_grade']
+georegions = mappings.parse("GeoRegions")
+georegions.columns = ['country','city_and_state','city','state','georegion']
 
 # merge in Workday office names
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
