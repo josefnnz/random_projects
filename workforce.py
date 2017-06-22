@@ -19,6 +19,18 @@ oath.columns = ['eeid','legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9
 	            'reporting_schema_level_1','reporting_schema_level_2','hr_support_eeid','hr_support_name','hr_support_userid',\
 	            'separations_group','separations_date','layer','mgr_userid_hierarchy','span']
 
+# load Yahoo comp
+ycomp_filepath = "/Users/josefnunez/workforce/yahoo_comp.xlsx"
+ycomp_sheetname = "Sheet1"
+ycomp_skiprows = 2
+ycomp = pandas.ExcelFile(ycomp_filepath).parse(ycomp_sheetname, skiprows=ycomp_skiprows)
+
+# load Yahoo active workers
+yactive_filepath = "/Users/josefnunez/workforce/yahoo_active_workers.xlsx"
+yactive_sheetname = "Sheet1"
+yactive_skiprows = 1
+yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheetname, skiprows=yactive_skiprows)
+
 # load mappings tables
 mappings_filepath = "/Users/josefnunez/workforce/mappings.xlsx" # Excel workbook containing tabs of mapping tables
 mappings = pandas.ExcelFile(mappings_filepath)
