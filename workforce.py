@@ -24,7 +24,7 @@ ycomp_filepath = "/Users/josefnunez/workforce/yahoo_comp.xlsx"
 ycomp_sheetname = "Sheet1"
 ycomp_skiprows = 2
 ycomp = pandas.ExcelFile(ycomp_filepath).parse(ycomp_sheetname, skiprows=ycomp_skiprows)
-ycomp.columns = ['eeid','emp_preferred_name','emp_type','job_code','job_profile','job_family_group','job_family','job_level',\
+ycomp.columns = ['eeid','emp_preferred_name','work_email','emp_type','job_code','job_profile','job_family_group','job_family','job_level',\
                  'job_category','comp_grade','comp_grade_profile','local_currency','base_annualized_in_local',\
                  'base_annualized_in_usd','fx_rate','bonus_plan','target_bonus_pct']
 
@@ -63,6 +63,12 @@ oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'
 # remove employees either (1) offboarded, (2) on transition, (3) future term
 oath = oath[~oath['work_email'].isin(offboards['work_email'])]
 oath = oath[oath['separations_date'].isnull()]
+oath = oath[(~oath['company'].str.contains("yahoo",case=False)) | (oath['work_email'].isin(yactive))] # remove inactive Yahoos -- keep all Aolers
+
+# merge in Yahoo job profiles for Yahoos, and then merge in oath job details
+oath = pandas.merge(oath, ycomp[['work_email','job_profile']], how='left', on='work_email')
+oath.loc[oath['job_profile_y'].notnull(), 'job_profile_x'] = oath['job_profile_y']
+oath = pandas.merge(oath, jobs, how='left', left_on='job_profile_x', right_on='old_job_profile')
 
 # merge in Workday office names
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
@@ -73,11 +79,12 @@ oath.rename(columns={'orgname' : 'L2_orgname'}, inplace=True)
 oath = pandas.merge(oath, orgnames.query('L2_or_L3 == "L3"')[['ps_L3_name','orgname']], how='left', left_on='L3', right_on='ps_L3_name')
 oath.rename(columns={'orgname' : 'L3_orgname'}, inplace=True)
 
+""" df.loc[df['country'].isnull(),'country'] = df['issuer'] """
 
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10']:
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
-# writer = pandas.ExcelWriter('output.xlsx')
-# oath.to_excel(writer,'Sheet1')
-# writer.save()
+writer = pandas.ExcelWriter('output.xlsx')
+oath.to_excel(writer,'Sheet1')
+writer.save()
