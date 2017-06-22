@@ -60,8 +60,9 @@ emailremap.columns = ['emp_name','aol_work_email','yahoo_work_email']
 # update Yahoos with AOL email address with their current Yahoo email
 oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
 
-# remove offboarded employees or employees on transition
+# remove employees either (1) offboarded, (2) on transition, (3) future term
 oath = oath[~oath['work_email'].isin(offboards['work_email'])]
+oath = oath[oath['separations_date'].isnull()]
 
 # merge in Workday office names
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
@@ -77,6 +78,6 @@ oath.rename(columns={'orgname' : 'L3_orgname'}, inplace=True)
 for x in ['legal_name','mgr_legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10']:
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
-writer = pandas.ExcelWriter('output.xlsx')
-oath.to_excel(writer,'Sheet1')
-writer.save()
+# writer = pandas.ExcelWriter('output.xlsx')
+# oath.to_excel(writer,'Sheet1')
+# writer.save()
