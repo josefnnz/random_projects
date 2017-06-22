@@ -24,12 +24,16 @@ ycomp_filepath = "/Users/josefnunez/workforce/yahoo_comp.xlsx"
 ycomp_sheetname = "Sheet1"
 ycomp_skiprows = 2
 ycomp = pandas.ExcelFile(ycomp_filepath).parse(ycomp_sheetname, skiprows=ycomp_skiprows)
+ycomp.columns = ['eeid','emp_preferred_name','emp_type','job_code','job_profile','job_family_group','job_family','job_level',\
+                 'job_category','comp_grade','comp_grade_profile','local_currency','base_annualized_in_local',\
+                 'base_annualized_in_usd','fx_rate','bonus_plan','target_bonus_pct']
 
 # load Yahoo active workers
 yactive_filepath = "/Users/josefnunez/workforce/yahoo_active_workers.xlsx"
 yactive_sheetname = "Sheet1"
 yactive_skiprows = 1
 yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheetname, skiprows=yactive_skiprows)
+yactive.columns = ['eeid','work_email','userid','worker_type','emp_type']
 
 # load mappings tables
 mappings_filepath = "/Users/josefnunez/workforce/mappings.xlsx" # Excel workbook containing tabs of mapping tables
@@ -38,6 +42,10 @@ offices = mappings.parse("Offices") # tab containing PS office name to WD office
 offices.columns = ['ps_office_name','wd_office_name','wfh_flag']
 orgnames = mappings.parse("SupOrgNames") # tab containing L2/L3 to supervisory org name
 orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L2_name','orgname']
+jobs = mappings.parse("Jobs") # tab containing Aol/Yahoo jobs to Oath jobs
+jobs.columns = ['company','old_job_profile','job_code','job_profile','job_family_grp','job_family','job_category_sort_order',\
+                'job_category','job_level','mgmt_level','eeo_job_classification','aap_job_classification','pay_rate_type',\
+                'is_exempt','comp_grade']
 
 # merge in Workday office names
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
