@@ -48,6 +48,11 @@ jobs.columns = ['company','old_job_profile','job_code','job_profile','job_family
                 'is_exempt','comp_grade']
 georegions = mappings.parse("GeoRegions")
 georegions.columns = ['country','city_and_state','city','state','georegion']
+emailremap = mappings.parse("EmailRemap")
+emailremap.columns = ['emp_name','aol_work_email','yahoo_work_email']
+
+# update Yahoos with AOL email address with their current Yahoo email
+oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
 
 # merge in Workday office names
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
