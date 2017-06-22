@@ -70,6 +70,12 @@ oath = pandas.merge(oath, ycomp[['work_email','job_profile']], how='left', on='w
 oath.loc[oath['job_profile_y'].notnull(), 'job_profile_x'] = oath['job_profile_y']
 oath = pandas.merge(oath, jobs, how='left', left_on='job_profile_x', right_on='old_job_profile')
 
+# merge in Oath geo regions
+oath['work_country'].replace({"Korea, Republic of" : "Republic of Korea"}, inplace=True) # reformat Republic of Korea
+oath = pandas.merge(oath, georegions[['city','georegion']], how='left', left_on='work_city', right_on='city')
+oath.loc[~oath['work_country'].str.contains("united states of america",case=False), 'georegion'] = oath['work_country']
+oath.loc[oath['wfh_flag'].str.contains("WFH",case=False), 'georegion'] = oath['wfh_flag']
+
 # merge in Workday office names
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
 
@@ -85,6 +91,6 @@ oath.rename(columns={'orgname' : 'L3_orgname'}, inplace=True)
 for x in ['legal_name','mgr_legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10']:
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
-writer = pandas.ExcelWriter('output.xlsx')
-oath.to_excel(writer,'Sheet1')
-writer.save()
+# writer = pandas.ExcelWriter('output.xlsx')
+# oath.to_excel(writer,'Sheet1')
+# writer.save()
