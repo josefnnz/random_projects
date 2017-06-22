@@ -4,20 +4,7 @@ import pandas
 oath_filepath = "/Users/josefnunez/workforce/roster.xlsx"
 oath_sheetname = "Sheet1"
 oath = pandas.ExcelFile(oath_filepath).parse(oath_sheetname)
-oath.columns = ['eeid','legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10',\
-	            'job_level','comp_grade','mgmt_level','status','regular_or_temp','full_time_or_part_time',\
-	            'work_email','userid','mgr_eeid','mgr_legal_name','mgr_work_email','mgr_userid','acquired_company',\
-	            'birth_date','original_hire_date','last_hire_date','department_entry_date','job_level_entry_date',\
-	            'job_entry_date','base_annualized_local','local_currency','base_annualized_usd','target_abp_plan_yr',\
-	            'target_abp_pct','target_abp_exception_flag','target_abp_amt_local','target_abp_amt_usd',\
-	            'sales_incentive_plan_yr','sales_beginning_date','sales_end_date','sales_incentive_target_amt_local',\
-	            'sales_incentive_target_amt_usd','sales_incentive_guarantee','work_from_home_flag','work_country_code',\
-	            'location_code','work_office','work_country','work_state_code','work_city','work_postal_code','home_country',\
-	            'home_state_code','home_city','home_postal_code','company_code','company','market_cluster','job_code',\
-	            'job_profile','job_family','aol_eeo_group','eeo_job_classification','comp_frequency','standard_hours',\
-	            'fte_pct','flsa','department_code','department_name','business_unit','division','region_code',\
-	            'reporting_schema_level_1','reporting_schema_level_2','hr_support_eeid','hr_support_name','hr_support_userid',\
-	            'separations_group','separations_date','layer','mgr_userid_hierarchy','span']
+oath.columns = ['eeid','legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10','job_level','comp_grade','mgmt_level','status','regular_or_temp','full_time_or_part_time','gender','ethnicity','marital_status','military_status','work_email','userid','mgr_eeid','mgr_legal_name','mgr_work_email','mgr_userid','acquired_company','birth_date','original_hire_date','last_hire_date','department_entry_date','job_level_entry_date','job_entry_date','benefit_program','base_annualized_local','local_currency','base_annualized_usd','target_abp_plan_yr','target_abp_pct','target_abp_exception_flag','target_abp_amt_local','target_abp_amt_usd','sales_incentive_plan_yr','sales_beginning_date','sales_end_date','sales_incentive_target_amt_local','sales_incentive_target_amt_usd','sales_incentive_guarantee','work_from_home_flag','work_country_code','location_code','work_office','work_country','work_state_code','work_city','work_postal_code','home_country','home_state_code','home_city','home_postal_code','company_code','company','market_cluster','job_code','job_profile','job_family','aol_eeo_group','eeo_job_classification','comp_frequency','standard_hours','fte_pct','flsa','department_code','department_name','business_unit','division','region_code','reporting_schema_level_1','reporting_schema_level_2','hr_support_eeid','hr_support_name','hr_support_userid','separations_group','separations_date','layer','mgr_userid_hierarchy','span']
 
 # load Yahoo comp
 ycomp_filepath = "/Users/josefnunez/workforce/yahoo_comp.xlsx"
@@ -66,7 +53,7 @@ oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='
 # remove employees either (1) offboarded, (2) on transition, (3) future term
 oath = oath[~oath['work_email'].isin(offboards['work_email'])]
 oath = oath[oath['separations_date'].isnull()]
-oath = oath[(~oath['company'].str.contains("yahoo",case=False)) | (oath['work_email'].isin(yactive))] # remove inactive Yahoos -- keep all Aolers
+#oath = oath[(~oath['company'].str.contains("yahoo",case=False)) | (oath['work_email'].isin(yactive))] # remove inactive Yahoos -- keep all Aolers
 
 # merge in Yahoo job profiles for Yahoos, and then merge in oath job details
 oath = pandas.merge(oath, ycomp[['work_email','job_profile']], how='left', on='work_email')
@@ -83,6 +70,7 @@ oath.loc[oath['wfh_flag'].notnull(), 'georegion'] = "WFH"
 oath = pandas.merge(oath, ycomp[['work_email','comp_grade','local_currency','base_annualized_in_local','target_bonus_pct','bonus_plan','fx_rate']], how='left', on='work_email')
 oath.loc[oath['base_annualized_in_local'].notnull(), 'base_annualized_local'] = oath['base_annualized_in_local'] # put Yahoo base values in main column
 oath.loc[oath['target_bonus_pct'].notnull(), 'target_abp_pct'] = oath['target_bonus_pct'] # put Yahoo target bonus % in main column
+oath.loc[oath['local_currency_y'].notnull(), 'local_currency_x'] = oath['local_currency_y'] # put Yahoo local currency in main column
 oath.loc[(oath['sales_beginning_date'].notnull()) & (oath['sales_incentive_target_amt_local'] > 0), 'target_abp_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local'] # compute Sales bonus targets
 
 
@@ -97,9 +85,22 @@ for x in ['legal_name','mgr_legal_name','CEO','L2','L3','L4','L5','L6','L7','L8'
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
 # extract relevant fields
+final_report = oath[['eeid','legal_name','work_email','userid','status','last_hire_date','regular_or_temp','full_time_or_part_time',\
+                        'acquired_company','mgr_eeid','mgr_legal_name','mgr_work_email','mgr_userid','fte_pct','job_code_y','job_profile',\
+                        'job_family_grp','job_family_y','job_category','job_level_y','mgmt_level_y','eeo_job_classification_y',\
+                        'aap_job_classification','comp_frequency','pay_rate_type','standard_hours','flsa','local_currency_x','fx_rate',\
+                        'base_annualized_local','target_abp_pct','target_abp_exception_flag','sales_incentive_guarantee','wd_office_name',\
+                        'wfh_flag','work_city','work_state_code','work_postal_code','work_country','comp_grade_y','georegion','span','CEO',\
+                        'L2','L3','L4','L5','L6','L7','L8','L9','L10','L2_orgname','L3_orgname','gender','ethnicity','marital_status','military_status','benefit_program']]
 
-
+final_report.columns = ['Employee ID','Legal Name','Work Email','User ID','Status','Last Hire Date','Regular / Temp','FT / PT','Acquired Company',\
+                        'Direct Supervisor - Emp ID','Direct Supervisor - Legal Name','Direct Supervisor - Work Email','Direct Supervisor - User ID',\
+                        'FTE %','Job Code','Job Profile','Job Family Group','Job Family','Job Category','Job Level','Management Level','EEO Job Group',\
+                        'EEO Job Family','Compensation Frequency','Pay Rate Type','Standard Hours','FLSA','Local Currency','FX Rate','Base Annualized (Local)',\
+                        'Target Bonus %','Target ABP Exception','Sales Incentive Guarantee','Work Location - Office','Work Location - Workspace',\
+                        'Work Location - City','Work Location - State','Work Location - Postal Code','Work Location - Country','Comp Grade','Comp Grade Profile',\
+                        'Direct Headcount','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10','L2 Org Name','L3 Org Name','gender','ethnicity','marital_status','military_status','benefit_program']
 
 writer = pandas.ExcelWriter('output.xlsx')
-oath.to_excel(writer,'Sheet1')
+final_report.to_excel(writer,'Sheet1', index=False)
 writer.save()
