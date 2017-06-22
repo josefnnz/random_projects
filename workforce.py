@@ -35,6 +35,12 @@ yactive_skiprows = 1
 yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheetname, skiprows=yactive_skiprows)
 yactive.columns = ['eeid','work_email','userid','worker_type','emp_type']
 
+# load final offboards list from AlixPartners
+offboards_filepath = "/Users/josefnunez/workforce/offboards.xlsx"
+offboards_sheetname = "Sheet1"
+offboards = pandas.ExcelFile(offboards_filepath).parse(offboards_sheetname)
+offboards.columns = ['work_email','badge_id','company','last_day_of_work','talent_decision']
+
 # load mappings tables
 mappings_filepath = "/Users/josefnunez/workforce/mappings.xlsx" # Excel workbook containing tabs of mapping tables
 mappings = pandas.ExcelFile(mappings_filepath)
