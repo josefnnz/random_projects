@@ -60,6 +60,9 @@ emailremap.columns = ['emp_name','aol_work_email','yahoo_work_email']
 # update Yahoos with AOL email address with their current Yahoo email
 oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
 
+# merge in Workday office names
+oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
+
 # remove employees either (1) offboarded, (2) on transition, (3) future term
 oath = oath[~oath['work_email'].isin(offboards['work_email'])]
 oath = oath[oath['separations_date'].isnull()]
@@ -74,10 +77,14 @@ oath = pandas.merge(oath, jobs, how='left', left_on='job_profile_x', right_on='o
 oath['work_country'].replace({"Korea, Republic of" : "Republic of Korea"}, inplace=True) # reformat Republic of Korea
 oath = pandas.merge(oath, georegions[['city','georegion']], how='left', left_on='work_city', right_on='city')
 oath.loc[~oath['work_country'].str.contains("united states of america",case=False), 'georegion'] = oath['work_country']
-oath.loc[oath['wfh_flag'].str.contains("WFH",case=False), 'georegion'] = oath['wfh_flag']
+oath.loc[oath['wfh_flag'].notnull(), 'georegion'] = "WFH"
 
-# merge in Workday office names
-oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
+# merge Yahoo comp details
+oath = pandas.merge(oath, ycomp[['work_email','comp_grade','local_currency','base_annualized_in_local','target_bonus_pct','bonus_plan','fx_rate']], how='left', on='work_email')
+oath.loc[oath['base_annualized_in_local'].notnull(), 'base_annualized_local'] = oath['base_annualized_in_local'] # put Yahoo base values in main column
+oath.loc[oath['target_bonus_pct'].notnull(), 'target_abp_pct'] = oath['target_bonus_pct'] # put Yahoo target bonus % in main column
+oath.loc[(oath['sales_beginning_date'].notnull()) & (oath['sales_incentive_target_amt_local'] > 0), 'target_abp_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local'] # compute Sales bonus targets
+
 
 # merge in L2 and L3 org names
 oath = pandas.merge(oath, orgnames.query('L2_or_L3 == "L2"')[['ps_L2_name','orgname']], how='left', left_on='L2', right_on='ps_L2_name')
@@ -85,12 +92,14 @@ oath.rename(columns={'orgname' : 'L2_orgname'}, inplace=True)
 oath = pandas.merge(oath, orgnames.query('L2_or_L3 == "L3"')[['ps_L3_name','orgname']], how='left', left_on='L3', right_on='ps_L3_name')
 oath.rename(columns={'orgname' : 'L3_orgname'}, inplace=True)
 
-""" df.loc[df['country'].isnull(),'country'] = df['issuer'] """
-
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10']:
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
-# writer = pandas.ExcelWriter('output.xlsx')
-# oath.to_excel(writer,'Sheet1')
-# writer.save()
+# extract relevant fields
+
+
+
+writer = pandas.ExcelWriter('output.xlsx')
+oath.to_excel(writer,'Sheet1')
+writer.save()
