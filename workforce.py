@@ -1,36 +1,39 @@
 import pandas
 
 # load Oath workforce roster, i.e. PeopleSoft report
-oath_filepath = "/Users/josefnunez/workforce/roster.xlsx"
-oath_sheetname = "Sheet1"
-oath = pandas.ExcelFile(oath_filepath).parse(oath_sheetname)
-oath.columns = ['eeid','legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10','job_level','comp_grade','mgmt_level','status','regular_or_temp','full_time_or_part_time','gender','ethnicity','marital_status','military_status','work_email','userid','mgr_eeid','mgr_legal_name','mgr_work_email','mgr_userid','acquired_company','birth_date','original_hire_date','last_hire_date','department_entry_date','job_level_entry_date','job_entry_date','benefit_program','base_annualized_local','local_currency','base_annualized_usd','target_abp_plan_yr','target_abp_pct','target_abp_exception_flag','target_abp_amt_local','target_abp_amt_usd','sales_incentive_plan_yr','sales_beginning_date','sales_end_date','sales_incentive_target_amt_local','sales_incentive_target_amt_usd','sales_incentive_guarantee','work_from_home_flag','work_country_code','location_code','work_office','work_country','work_state_code','work_city','work_postal_code','home_country','home_state_code','home_city','home_postal_code','company_code','company','market_cluster','job_code','job_profile','job_family','aol_eeo_group','eeo_job_classification','comp_frequency','standard_hours','fte_pct','flsa','department_code','department_name','business_unit','division','region_code','reporting_schema_level_1','reporting_schema_level_2','hr_support_eeid','hr_support_name','hr_support_userid','separations_group','separations_date','layer','mgr_userid_hierarchy','span']
+oath = pandas.ExcelFile("/Users/josefnunez/workforce/roster.xlsx").parse("Sheet1")
+oath.columns = ['eeid','legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10','job_level','comp_grade',\
+                'mgmt_level','status','regular_or_temp','full_time_or_part_time','gender','ethnicity','marital_status',\
+                'military_status','work_email','userid','mgr_eeid','mgr_legal_name','mgr_work_email','mgr_userid',\
+                'acquired_company','birth_date','original_hire_date','last_hire_date','department_entry_date',\
+                'job_level_entry_date','job_entry_date','benefit_program','base_annualized_local','local_currency',\
+                'base_annualized_usd','target_abp_plan_yr','target_abp_pct','target_abp_exception_flag',\
+                'target_abp_amt_local','target_abp_amt_usd','sales_incentive_plan_yr','sales_beginning_date',\
+                'sales_end_date','sales_incentive_target_amt_local','sales_incentive_target_amt_usd',\
+                'sales_incentive_guarantee','work_from_home_flag','work_country_code','location_code','work_office',\
+                'work_country','work_state_code','work_city','work_postal_code','home_country','home_state_code',\
+                'home_city','home_postal_code','company_code','company','market_cluster','job_code','job_profile',\
+                'job_family','aol_eeo_group','eeo_job_classification','comp_frequency','standard_hours','fte_pct',\
+                'flsa','department_code','department_name','business_unit','division','region_code','reporting_schema_level_1',\
+                'reporting_schema_level_2','hr_support_eeid','hr_support_name','hr_support_userid','separations_group',\
+                'separations_date','layer','mgr_userid_hierarchy','span']
 
 # load Yahoo comp
-ycomp_filepath = "/Users/josefnunez/workforce/yahoo_comp.xlsx"
-ycomp_sheetname = "Sheet1"
-ycomp_skiprows = 2
-ycomp = pandas.ExcelFile(ycomp_filepath).parse(ycomp_sheetname, skiprows=ycomp_skiprows)
+ycomp = pandas.ExcelFile("/Users/josefnunez/workforce/yahoo_comp.xlsx").parse("Sheet1", skiprows=2)
 ycomp.columns = ['eeid','emp_preferred_name','work_email','emp_type','job_code','job_profile','job_family_group','job_family','job_level',\
                  'job_category','comp_grade','comp_grade_profile','local_currency','base_annualized_in_local',\
                  'base_annualized_in_usd','fx_rate','bonus_plan','target_bonus_pct']
 
 # load Yahoo active workers
-yactive_filepath = "/Users/josefnunez/workforce/yahoo_active_workers.xlsx"
-yactive_sheetname = "Sheet1"
-yactive_skiprows = 1
-yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheetname, skiprows=yactive_skiprows)
+yactive = pandas.ExcelFile("/Users/josefnunez/workforce/yahoo_active_workers.xlsx").parse("Sheet1", skiprows=1)
 yactive.columns = ['eeid','work_email','userid','worker_type','emp_type']
 
 # load final offboards list from AlixPartners
-offboards_filepath = "/Users/josefnunez/workforce/offboards.xlsx"
-offboards_sheetname = "Sheet1"
-offboards = pandas.ExcelFile(offboards_filepath).parse(offboards_sheetname)
-offboards.columns = ['work_email','badge_id','company','last_day_of_work','talent_decision']
+offboards = pandas.ExcelFile("/Users/josefnunez/workforce/offboards.xlsx").parse("Sheet1")
+offboards.columns = ['work_email','badge_id','company','last_day_of_work']
 
 # load mappings tables
-mappings_filepath = "/Users/josefnunez/workforce/mappings.xlsx" # Excel workbook containing tabs of mapping tables
-mappings = pandas.ExcelFile(mappings_filepath)
+mappings = pandas.ExcelFile("/Users/josefnunez/workforce/mappings.xlsx") # Excel workbook containing tabs of mapping tables
 offices = mappings.parse("Offices") # tab containing PS office name to WD office name
 offices.columns = ['ps_office_name','wd_office_name','wfh_flag']
 orgnames = mappings.parse("SupOrgNames") # tab containing L2/L3 to supervisory org name
