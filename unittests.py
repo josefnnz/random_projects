@@ -51,5 +51,47 @@ class TestStringMethods(unittest.TestCase):
 			                     'f':[11,12]})
 		assert_frame_equal(expected, actual, check_names=True)
 
+	def test_format_number_1(self):
+		self.assertEqual('000001', '%06d' % 1)
+		self.assertEqual('000012', '%06d' % 12)
+		self.assertEqual('000123', '%06d' % 123)
+		self.assertEqual('001234', '%06d' % 1234)
+		self.assertEqual('012345', '%06d' % 12345)
+		self.assertEqual('123456', '%06d' % 123456)
+
+	def test_format_number_2(self):
+		actual = pd.DataFrame({'a':[1,12,123,1234,12345,123456]})
+		actual['a'] = actual['a'].apply('{0:0>6}'.format)
+		expected = pd.DataFrame({'a':['000001','000012','000123','001234','012345','123456']})
+		assert_frame_equal(expected, actual, check_names=True)
+
+	def test_format_number_3(self):
+		actual = pd.DataFrame({'a':['1','12','123','1234','12345','123456']})
+		actual['a'] = actual['a'].apply('{0:0>6}'.format)
+		expected = pd.DataFrame({'a':['000001','000012','000123','001234','012345','123456']})
+		assert_frame_equal(expected, actual, check_names=True)
+
+	def test_format_number_4(self):
+		actual = pd.DataFrame({'a':['A1','A12','A123','A1234','A123456','A1234567','A12345678','A123456789']})
+		actual['a'] = actual['a'].apply('{0:0>6}'.format)
+		expected = pd.DataFrame({'a':['0000A1','000A12','00A123','0A1234','A123456','A1234567','A12345678','A123456789']})
+		assert_frame_equal(expected, actual, check_names=True)
+
 if __name__ == '__main__':
 	unittest.main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
