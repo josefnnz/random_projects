@@ -1,6 +1,8 @@
 import pandas
 import numpy
 
+# FOR REFERENCE: counts by group is df.groupby('colname').size()
+
 ################################################################################
 ##### Setup options
 
@@ -122,6 +124,9 @@ regions.drop_duplicates('country', inplace=True)
 
 ################################################################################
 
+# immediately remove workers marked as not used for headcount reporting
+oath = oath.loc[~oath["wf_group"].str.contains("Not Used for WF Report",case=False)]
+
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
@@ -148,14 +153,8 @@ oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='
 oath['work_region'] = vlookup(oath, regions, 'work_country', 'country', 'region')
 
 oath['active_status'] = 'Yes'
-oath['emp_type'] = 'placeholder'
-oath['job_family_group'] = 'placeholder'
-oath['mgmt_level'] = 'placeholder'
-oath['pay_rate_type'] = 'placeholder'
 oath['L2_org_name'] = 'placeholder'
 oath['L3_org_name'] = 'placeholder'
-oath['target_bonus_amt_local'] = 'placeholder'
-oath['ttc_annualized_local'] = 'placeholder'
 
 # merge in Oath job details
 oath['job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
@@ -181,18 +180,28 @@ oath['target_bonus_amt_usd'] = oath['base_annualized_usd'] * oath['target_bonus_
 oath['ttc_annualized_local'] = oath['base_annualized_local'] + oath['target_bonus_amt_local']
 oath['ttc_annualized_usd'] = oath['base_annualized_usd'] + oath['target_bonus_amt_usd']
 
+# complete worker and employee types -- NEEDS TO BE DONE AFTER JOB DETAILS HAVE BEEN MERGED INTO OATH DATA FRAME
+oath['worker_type'], oath['emp_type'] = None, None
+is_employee = oath['wf_group'].str.contains("Employees for WF Report",case=False)
+oath.loc[is_employee, 'worker_type'] = 'Employee'
+oath.loc[~is_employee, 'worker_type'] = 'Contingent Worker'
+is_intern = oath['job_category'].str.contains('INT',case=False).fillna(False)
+oath.loc[is_intern, 'emp_type'] = 'Employee Type - Intern'
+oath.loc[(is_employee) & (~is_intern), 'emp_type'] = 'Employee Type - Regular'
 
-ced_nonsens_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
-                    'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','email',\
+# Current Worker Details columns (includes contingent workers)
+cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
+                    'original_hire_date','active_status','ft_or_pt','fte_pct','email',\
                     'acquired_company','job_code','job_profile','job_family_group','job_family',\
                     'job_level','job_category','mgmt_level','comp_grade_profile','pay_rate_type',\
                     'work_office','wfh_flag','work_country','work_region','CEO_name','L2_name',\
                     'L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name']
 
-ced_nonsens = oath.loc[:, ced_nonsens_cols]
+cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
-cks_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
-            'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','std_hrs','email',\
+# Comp Kitchen Sink columns (includes contingent workers)
+cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
+            'original_hire_date','active_status','ft_or_pt','fte_pct','std_hrs','email',\
             'acquired_company','job_code','job_profile','job_family_group','job_family','job_level',\
             'job_category','mgmt_level','comp_grade','comp_grade_profile','pay_rate_type','flsa',\
             'currency_code','base_annualized_local','base_annualized_usd','bonus_plan',\
