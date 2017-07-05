@@ -9,6 +9,14 @@ def vlookup(left, right, left_key, right_key, right_col):
     output = pd.merge(mleft, mright, how='left', left_on=left_key, right_on=right_key)
     return output.loc[:, right_col].to_frame()
 
+def vlookup_update(left, right, left_key, right_key, left_col, right_col):
+    mleft = left.loc[:, [left_key, left_col]]
+    mright = right.loc[:, [right_key, right_col]]
+    mleft.columns, mright.columns = ['key','lval'], ['key','rval']
+    output = pd.merge(mleft, mright, how='left', on='key')
+    output.loc[output.loc[:, 'rval'].notnull(), 'lval'] = output.loc[:, 'rval']
+    return output.loc[:, 'lval'].to_frame()
+
 class TestStringMethods(unittest.TestCase):
 
 	def setUp(self):
@@ -20,10 +28,20 @@ class TestStringMethods(unittest.TestCase):
 			                     'd':[7,8],
 			                     'e':[9,10],
 			                     'f':[11,12]})
+		self.df4 = pd.DataFrame({'a':[0,1,2,3], 
+			                     'b':[99,-1,-1,99]})
 
 	def tearDown(self):
 		self.df1 = None
 		self.df2 = None
+
+	def test_vlookup_update_1(self):
+		actual = self.df4.copy()
+		actual['b'] = vlookup_update(self.df4, self.df1, 'a', 'a', 'b', 'b')
+		actual['b'] = actual['b'].astype(int) # merge casts 'b' to float -> need to cast back
+		expected = pd.DataFrame({'a':[0,1,2,3], 
+			                     'b':[99,3,4,99]})
+		assert_frame_equal(expected, actual, check_names=False)
 
 	def test_vlookup_1(self):
 		self.df1.loc[:, 'd'] = vlookup(self.df1, self.df2, 'b', 'c', 'd')
