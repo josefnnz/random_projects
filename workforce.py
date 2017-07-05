@@ -71,7 +71,8 @@ ycomp.columns = ['yahoo_eeid','emp_preferred_name','email','emp_type','yahoo_job
                  'yahoo_job_profile','yahoo_job_family_group','yahoo_job_family','yahoo_job_level',\
                  'yahoo_job_category','yahoo_comp_grade','yahoo_comp_grade_profile','local_currency',\
                  'base_annualized_in_local','base_annualized_in_usd','fx_rate',\
-                 'yahoo_bonus_plan','target_bonus_pct','last_day_of_work','last_hire_date','original_hire_date']
+                 'yahoo_bonus_plan','target_bonus_pct','last_day_of_work','last_hire_date',\
+                 'original_hire_date','yahoo_userid']
 
 # load Yahoo active workers
 yactive_filepath, yactive_sheet, yactive_skiprows = setwd+"yahoo_active_workers.xlsx", "Sheet1", 1
@@ -197,7 +198,7 @@ oath['bonus_plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bon
 oath['target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct')
 oath['last_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'last_hire_date', 'last_hire_date')
 oath['original_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'original_hire_date', 'original_hire_date')
-
+oath['userid'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
 
 # compute target bonus amount and target TTC
 oath['target_bonus_amt_local'] = oath['base_annualized_local'] * oath['target_bonus_pct']
