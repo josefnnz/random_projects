@@ -139,6 +139,10 @@ is_yahoo = oath['company'].str.contains("yahoo",case=False)
 oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
 oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
 
+# reformat Full time / Part time field
+oath.loc[oath['ft_or_pt'].str.contains("Full-Time",case=False), 'ft_or_pt'] = 'Full time'
+oath.loc[oath['ft_or_pt'].str.contains("Part-Time",case=False), 'ft_or_pt'] = 'Part time'
+
 # merge in Workday office names
 oath['work_office'] = vlookup(oath, offices, 'work_office', 'ps_office_name', 'wd_office_name')
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
@@ -153,7 +157,7 @@ oath['mgmt_level'] = 'placeholder'
 oath['pay_rate_type'] = 'placeholder'
 oath['L2_org_name'] = 'placeholder'
 oath['L3_org_name'] = 'placeholder'
-oath['target_bonus_amt'] = 'placeholder'
+oath['target_bonus_amt_local'] = 'placeholder'
 oath['ttc_annualized_local'] = 'placeholder'
 
 # merge in Oath job details
@@ -166,6 +170,41 @@ oath['mgmt_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath
 oath['comp_grade'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'comp_grade', 'oath_comp_grade')
 oath['pay_rate_type'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type')
 oath['flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
+
+# merge Yahoo comp details
+oath['base_annualized_local'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
+oath['base_annualized_usd'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
+oath['currency_code'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
+oath['bonus_plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan')
+oath['target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct')
+
+# compute target bonus amount and target TTC
+oath['target_bonus_amt_local'] = oath['base_annualized_local'] * oath['target_bonus_pct']
+oath['target_bonus_amt_usd'] = oath['base_annualized_usd'] * oath['target_bonus_pct']
+oath['ttc_annualized_local'] = oath['base_annualized_local'] + oath['target_bonus_amt_local']
+oath['ttc_annualized_usd'] = oath['base_annualized_usd'] + oath['target_bonus_amt_usd']
+
+
+ced_nonsens_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
+                    'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','email',\
+                    'acquired_company','job_code','job_profile','job_family_group','job_family',\
+                    'job_level','job_category','mgmt_level','comp_grade_profile','pay_rate_type',\
+                    'work_office','wfh_flag','work_country','work_region','CEO_name','L2_name',\
+                    'L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name']
+
+ced_nonsens = oath.loc[:, ced_nonsens_cols]
+
+cks_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
+            'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','std_hrs','email',\
+            'acquired_company','job_code','job_profile','job_family_group','job_family','job_level',\
+            'job_category','mgmt_level','comp_grade','comp_grade_profile','pay_rate_type','flsa',\
+            'currency_code','base_annualized_local','base_annualized_usd','bonus_plan',\
+            'target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd','ttc_annualized_local',\
+            'ttc_annualized_usd','wfh_flag','work_office',\
+            'work_city','work_state','work_country','work_region','CEO_name','L2_name','L3_name',\
+            'L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L2_org_name','L3_org_name']
+
+cks = oath.loc[:, cks_cols]
 
 # # update Yahoos with AOL email address with their current Yahoo email
 # # oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
@@ -190,32 +229,6 @@ oath['flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'fls
 # oath.loc[~oath['work_country'].str.contains("united states of america",case=False), 'georegion'] = oath['work_country']
 # oath.loc[oath['wfh_flag'].notnull(), 'georegion'] = "WFH"
 
-# merge Yahoo comp details
-oath['base_annualized_local'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
-oath['base_annualized_usd'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
-oath['currency_code'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
-oath['bonus plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan')
-oath['target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct')
-
-ced_nonsens_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
-                    'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','email',\
-                    'acquired_company','job_code','job_profile','job_family_group','job_family',\
-                    'job_level','job_category','mgmt_level','comp_grade_profile','pay_rate_type',\
-                    'work_office','wfh_flag','work_country','work_region','CEO_name','L2_name',\
-                    'L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name']
-
-ced_nonsens = oath.loc[:, ced_nonsens_cols]
-
-cks_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
-            'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','std_hrs','email',\
-            'acquired_company','job_code','job_profile','job_family_group','job_family','job_level',\
-            'job_category','mgmt_level','comp_grade','comp_grade_profile','pay_rate_type','flsa',\
-            'base_annualized_local','currency_code','base_annualized_usd','bonus_plan',\
-            'target_bonus_pct','target_bonus_amt','ttc_annualized_local','wfh_flag','work_office',\
-            'work_city','work_state','work_country','work_region','CEO_name','L2_name','L3_name',\
-            'L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L2_org_name','L3_org_name']
-
-cks = oath.loc[:, cks_cols]
 
 # oath = pandas.merge(oath, ycomp[['work_email','comp_grade','local_currency','base_annualized_in_local','target_bonus_pct','bonus_plan','fx_rate']], how='left', on='work_email')
 # oath.loc[oath['base_annualized_in_local'].notnull(), 'base_annualized_local'] = oath['base_annualized_in_local'] # put Yahoo base values in main column
