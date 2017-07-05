@@ -109,10 +109,15 @@ oath_jobs.columns = ['oath_job_code','oath_job_profile','oath_job_family_group',
 oath_jobs.loc[:,'oath_job_code'] = oath_jobs.loc[:,'oath_job_code'].astype('object')
 oath_jobs.drop_duplicates('oath_job_code', inplace=True)
 
-# load city to geo region
-georegions = mappings.parse("GeoRegions")
-georegions.columns = ['country','city_and_state','city','state','oath_georegion']
-georegions.drop_duplicates('city', inplace=True)
+# load city to Oath comp grade profile
+oath_cgps = mappings.parse("CompGradeProfiles")
+oath_cgps.columns = ['country','city_and_state','city','state','oath_georegion']
+oath_cgps.drop_duplicates('city', inplace=True)
+
+# load country to region
+regions = mappings.parse('Regions')
+regions.columns = ['country', 'region']
+regions.drop_duplicates('country', inplace=True)
 
 # # load AOL to Yahoo email
 # emailremap = mappings.parse("EmailRemap")
@@ -124,10 +129,22 @@ georegions.drop_duplicates('city', inplace=True)
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
+# reformat WFH flag
+is_wfh = oath.loc[:, 'wfh_flag'].str.contains("Yes",case=False)
+oath.loc[is_wfh, 'wfh_flag'] = 'WFH'
+oath.loc[~is_wfh, 'wfh_flag'] = None
+
 # create acquired company field (AOL/Yahoo)
 is_yahoo = oath.loc[:, 'company'].str.contains("yahoo",case=False)
 oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
 oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
+
+# merge in Workday office names
+oath['work_office'] = vlookup(oath, offices, 'work_office', 'ps_office_name', 'wd_office_name')
+oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
+
+# merge in Workday region names
+oath['work_region'] = vlookup(oath, regions, 'work_country', 'country', 'region')
 
 oath.loc[:, 'active_status'] = 'Yes'
 oath.loc[:, 'emp_type'] = 'placeholder'
@@ -139,7 +156,7 @@ oath.loc[:, 'L3_org_name'] = 'placeholder'
 oath.loc[:, 'target_bonus_amt'] = 'placeholder'
 oath.loc[:, 'ttc_annualized_local'] = 'placeholder'
 
-# oath.loc[:, 'job_code']
+# merge in Oath job details
 oath.loc[:, 'job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
 oath.loc[:, 'job_family_group'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_family_group')
 oath.loc[:, 'job_family'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_family', 'oath_job_family')
@@ -154,8 +171,6 @@ oath.loc[:, 'flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code
 # # oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
 # oath.loc[:,'email'] = vlookup(oath, ycomp, 'yahoo_eeid', 'eeid', 'email')
 
-# # merge in Workday office names
-# oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
 
 # # remove employees either (1) offboarded, (2) on transition, (3) future term
 # # oath = oath[~oath['work_email'].isin(offboards['work_email'])]
