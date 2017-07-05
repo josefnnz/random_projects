@@ -59,7 +59,8 @@ oath.columns = ['wf_group','worker_type','yahoo_eeid','yahoo_userid','aol_eeid',
                 'business_unit','division','region_code','reporting_schema_level_1',\
                 'reporting_schema_level_2','hr_support_eeid','hr_support_name',\
                 'hr_support_userid','separations_group','separation_date','layer',\
-                'userid_hierarchy','direct_headcount']			
+                'userid_hierarchy','direct_headcount']		
+oath['job_code'] = oath['job_code'].apply('{0:0>6}'.format)	# reformat job code for lookup
 
 # load Yahoo comp
 ycomp_filepath, ycomp_sheet, ycomp_skiprows = setwd+"yahoo_comp.xlsx", "Sheet1", 2
@@ -106,7 +107,7 @@ oath_jobs.columns = ['oath_job_code','oath_job_profile','oath_job_family_group',
                      'oath_job_category_sort_order','oath_job_category','oath_job_level',\
                      'oath_mgmt_level','oath_eeo_job_classification','oath_aap_job_classification',\
                      'oath_pay_rate_type','oath_is_exempt','oath_comp_grade']
-oath_jobs.loc[:,'oath_job_code'] = oath_jobs.loc[:,'oath_job_code'].astype('object')
+oath_jobs['oath_job_code'] = oath_jobs['oath_job_code'].apply('{0:0>6}'.format) # reformat job code for lookup
 oath_jobs.drop_duplicates('oath_job_code', inplace=True)
 
 # load city to Oath comp grade profile
