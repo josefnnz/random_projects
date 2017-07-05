@@ -130,14 +130,14 @@ for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name'
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
 # reformat WFH flag
-is_wfh = oath.loc[:, 'wfh_flag'].str.contains("Yes",case=False)
-oath.loc[is_wfh, 'wfh_flag'] = 'WFH'
-oath.loc[~is_wfh, 'wfh_flag'] = None
+is_wfh = oath['wfh_flag'].str.contains("Yes",case=False)
+oath[is_wfh, 'wfh_flag'] = 'WFH'
+oath[~is_wfh, 'wfh_flag'] = None
 
 # create acquired company field (AOL/Yahoo)
-is_yahoo = oath.loc[:, 'company'].str.contains("yahoo",case=False)
-oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
-oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
+is_yahoo = oath['company'].str.contains("yahoo",case=False)
+oath[is_yahoo, 'acquired_company'] = 'Yahoo'
+oath[~is_yahoo, 'acquired_company'] = 'AOL'
 
 # merge in Workday office names
 oath['work_office'] = vlookup(oath, offices, 'work_office', 'ps_office_name', 'wd_office_name')
@@ -146,26 +146,26 @@ oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='
 # merge in Workday region names
 oath['work_region'] = vlookup(oath, regions, 'work_country', 'country', 'region')
 
-oath.loc[:, 'active_status'] = 'Yes'
-oath.loc[:, 'emp_type'] = 'placeholder'
-oath.loc[:, 'job_family_group'] = 'placeholder'
-oath.loc[:, 'mgmt_level'] = 'placeholder'
-oath.loc[:, 'pay_rate_type'] = 'placeholder'
-oath.loc[:, 'L2_org_name'] = 'placeholder'
-oath.loc[:, 'L3_org_name'] = 'placeholder'
-oath.loc[:, 'target_bonus_amt'] = 'placeholder'
-oath.loc[:, 'ttc_annualized_local'] = 'placeholder'
+oath['active_status'] = 'Yes'
+oath['emp_type'] = 'placeholder'
+oath['job_family_group'] = 'placeholder'
+oath['mgmt_level'] = 'placeholder'
+oath['pay_rate_type'] = 'placeholder'
+oath['L2_org_name'] = 'placeholder'
+oath['L3_org_name'] = 'placeholder'
+oath['target_bonus_amt'] = 'placeholder'
+oath['ttc_annualized_local'] = 'placeholder'
 
 # merge in Oath job details
-oath.loc[:, 'job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
-oath.loc[:, 'job_family_group'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_family_group')
-oath.loc[:, 'job_family'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_family', 'oath_job_family')
-oath.loc[:, 'job_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_level')
-oath.loc[:, 'job_category'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_category')
-oath.loc[:, 'mgmt_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_mgmt_level')
-oath.loc[:, 'comp_grade'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'comp_grade', 'oath_comp_grade')
-oath.loc[:, 'pay_rate_type'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type')
-oath.loc[:, 'flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
+oath['job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
+oath['job_family_group'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_family_group')
+oath['job_family'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_family', 'oath_job_family')
+oath['job_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_level')
+oath['job_category'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_category')
+oath['mgmt_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_mgmt_level')
+oath['comp_grade'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'comp_grade', 'oath_comp_grade')
+oath['pay_rate_type'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type')
+oath['flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
 
 # # update Yahoos with AOL email address with their current Yahoo email
 # # oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
@@ -191,11 +191,11 @@ oath.loc[:, 'flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code
 # oath.loc[oath['wfh_flag'].notnull(), 'georegion'] = "WFH"
 
 # merge Yahoo comp details
-oath.loc[:, 'base_annualized_local'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
-oath.loc[:, 'base_annualized_usd'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
-oath.loc[:, 'currency_code'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
-oath.loc[:, 'bonus plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan')
-oath.loc[:, 'target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct')
+oath['base_annualized_local'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
+oath['base_annualized_usd'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
+oath['currency_code'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
+oath['bonus plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan')
+oath['target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct')
 
 ced_nonsens_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
                     'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','email',\
