@@ -203,22 +203,10 @@ cks_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid'
 
 cks = oath.loc[:, cks_cols]
 
-# # update Yahoos with AOL email address with their current Yahoo email
-# # oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
-# oath.loc[:,'email'] = vlookup(oath, ycomp, 'yahoo_eeid', 'eeid', 'email')
-
-
 # # remove employees either (1) offboarded, (2) on transition, (3) future term
 # # oath = oath[~oath['work_email'].isin(offboards['work_email'])]
 # oath = oath[oath['separations_date'].isnull()]
 # #oath = oath[(~oath['company'].str.contains("yahoo",case=False)) | (oath['work_email'].isin(yactive))] # remove inactive Yahoos -- keep all Aolers
-
-# # merge in Yahoo job profiles for Yahoos, and then merge in oath job details
-# # oath = pandas.merge(oath, ycomp[['work_email','job_profile']], how='left', on='work_email')
-# # oath.loc[oath['job_profile_y'].notnull(), 'job_profile_x'] = oath['job_profile_y']
-# # oath = pandas.merge(oath, jobs, how='left', left_on='job_profile', right_on='old_job_profile')
-# # oath = pandas.merge(oath, jobs, how='left', on='job_code')
-# oath.update(jobs, on='job_code')
 
 # # merge in Oath geo regions
 # oath['work_country'].replace({"Korea, Republic of" : "Republic of Korea"}, inplace=True) # reformat Republic of Korea
@@ -226,37 +214,17 @@ cks = oath.loc[:, cks_cols]
 # oath.loc[~oath['work_country'].str.contains("united states of america",case=False), 'georegion'] = oath['work_country']
 # oath.loc[oath['wfh_flag'].notnull(), 'georegion'] = "WFH"
 
-
 # oath = pandas.merge(oath, ycomp[['work_email','comp_grade','local_currency','base_annualized_in_local','target_bonus_pct','bonus_plan','fx_rate']], how='left', on='work_email')
 # oath.loc[oath['base_annualized_in_local'].notnull(), 'base_annualized_local'] = oath['base_annualized_in_local'] # put Yahoo base values in main column
 # oath.loc[oath['target_bonus_pct'].notnull(), 'target_abp_pct'] = oath['target_bonus_pct'] # put Yahoo target bonus % in main column
 # oath.loc[oath['local_currency_y'].notnull(), 'local_currency_x'] = oath['local_currency_y'] # put Yahoo local currency in main column
 # oath.loc[(oath['sales_beginning_date'].notnull()) & (oath['sales_incentive_target_amt_local'] > 0), 'target_abp_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local'] # compute Sales bonus targets
 
-
 # # merge in L2 and L3 org names
 # oath = pandas.merge(oath, l2orgnames.query('L2_or_L3 == "L2"')[['ps_L2_name','orgname']], how='left', left_on='L2', right_on='ps_L2_name')
 # oath.rename(columns={'orgname' : 'L2_orgname'}, inplace=True)
 # oath = pandas.merge(oath, l3orgnames.query('L2_or_L3 == "L3"')[['ps_L3_name','orgname']], how='left', left_on='L3', right_on='ps_L3_name')
 # oath.rename(columns={'orgname' : 'L3_orgname'}, inplace=True)
-
-
-# # extract relevant fields
-# final_report = oath[['eeid','legal_name','work_email','userid','status','last_hire_date','regular_or_temp','full_time_or_part_time',\
-#                         'acquired_company','mgr_eeid','mgr_legal_name','mgr_work_email','mgr_userid','fte_pct','job_code','job_profile_y',\
-#                         'job_family_grp','job_family_y','job_category','job_level_y','mgmt_level_y','eeo_job_classification_y',\
-#                         'aap_job_classification','comp_frequency','pay_rate_type','standard_hours','flsa','local_currency_x','fx_rate',\
-#                         'base_annualized_local','target_abp_pct','target_abp_exception_flag','sales_incentive_guarantee','wd_office_name',\
-#                         'wfh_flag','work_city','work_state_code','work_postal_code','work_country','comp_grade_y','georegion','span','CEO',\
-#                         'L2','L3','L4','L5','L6','L7','L8','L9','L10','L2_orgname','L3_orgname','gender','ethnicity','marital_status','military_status','benefit_program']]
-
-# final_report.columns = ['Employee ID','Legal Name','Work Email','User ID','Status','Last Hire Date','Regular / Temp','FT / PT','Acquired Company',\
-#                         'Direct Supervisor - Emp ID','Direct Supervisor - Legal Name','Direct Supervisor - Work Email','Direct Supervisor - User ID',\
-#                         'FTE %','Job Code','Job Profile','Job Family Group','Job Family','Job Category','Job Level','Management Level','EEO Job Group',\
-#                         'EEO Job Family','Compensation Frequency','Pay Rate Type','Standard Hours','FLSA','Local Currency','FX Rate','Base Annualized (Local)',\
-#                         'Target Bonus %','Target ABP Exception','Sales Incentive Guarantee','Work Location - Office','Work Location - Workspace',\
-#                         'Work Location - City','Work Location - State','Work Location - Postal Code','Work Location - Country','Comp Grade','Comp Grade Profile',\
-#                         'Direct Headcount','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10','L2 Org Name','L3 Org Name','gender','ethnicity','marital_status','military_status','benefit_program']
 
 # writer = pandas.ExcelWriter('output.xlsx')
 # final_report.to_excel(writer,'Sheet1', index=False)
