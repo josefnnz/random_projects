@@ -101,13 +101,13 @@ l3orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L3_n
 l3orgnames.drop_duplicates('ps_L3_name', inplace=True)
 
 # load Oath job catalog
-jobs = mappings.parse("Jobs")
-jobs.columns = ['oath_job_code','oath_job_profile','oath_job_family_grp','oath_job_family',\
-                'oath_job_category_sort_order','oath_job_category','oath_job_level',\
-                'oath_mgmt_level','oath_eeo_job_classification','oath_aap_job_classification',\
-                'oath_pay_rate_type','oath_is_exempt','oath_comp_grade']
-jobs.loc[:,'oath_job_code'] = jobs.loc[:,'oath_job_code'].astype('object')
-jobs.drop_duplicates('oath_job_code', inplace=True)
+oath_jobs = mappings.parse("Jobs")
+oath_jobs.columns = ['oath_job_code','oath_job_profile','oath_job_family_group','oath_job_family',\
+                     'oath_job_category_sort_order','oath_job_category','oath_job_level',\
+                     'oath_mgmt_level','oath_eeo_job_classification','oath_aap_job_classification',\
+                     'oath_pay_rate_type','oath_is_exempt','oath_comp_grade']
+oath_jobs.loc[:,'oath_job_code'] = oath_jobs.loc[:,'oath_job_code'].astype('object')
+oath_jobs.drop_duplicates('oath_job_code', inplace=True)
 
 # load city to geo region
 georegions = mappings.parse("GeoRegions")
@@ -129,7 +129,7 @@ is_yahoo = oath.loc[:, 'company'].str.contains("yahoo",case=False)
 oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
 oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
 
-oath.loc[:, 'active_status'] = 'Y'
+oath.loc[:, 'active_status'] = 'Yes'
 oath.loc[:, 'emp_type'] = 'placeholder'
 oath.loc[:, 'job_family_group'] = 'placeholder'
 oath.loc[:, 'mgmt_level'] = 'placeholder'
@@ -139,6 +139,16 @@ oath.loc[:, 'L3_org_name'] = 'placeholder'
 oath.loc[:, 'target_bonus_amt'] = 'placeholder'
 oath.loc[:, 'ttc_annualized_local'] = 'placeholder'
 
+# oath.loc[:, 'job_code']
+oath.loc[:, 'job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
+oath.loc[:, 'job_family_group'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_family_group')
+oath.loc[:, 'job_family'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_family', 'oath_job_family')
+oath.loc[:, 'job_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_level')
+oath.loc[:, 'job_category'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_category')
+oath.loc[:, 'mgmt_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_mgmt_level')
+oath.loc[:, 'comp_grade'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'comp_grade', 'oath_comp_grade')
+oath.loc[:, 'pay_rate_type'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type')
+oath.loc[:, 'flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
 
 # # update Yahoos with AOL email address with their current Yahoo email
 # # oath.replace(emailremap.set_index('aol_work_email').to_dict()['yahoo_work_email'], inplace=True)
