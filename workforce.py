@@ -36,9 +36,9 @@ oath = pandas.ExcelFile(oath_filepath).parse(oath_sheet)
 # oath_filepath = setwd+"roster.csv"
 # oath = pandas.read_csv(oath_filepath, low_memory=False)
 oath.columns = ['wf_group','worker_type','yahoo_eeid','yahoo_userid','aol_eeid',\
-                'legal_name','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
-                'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
-                'L7_eeid','L7_name','L8_name','L9_name','L10_name','comp_grade',\
+                'legal_name','CEO_name','L2_pseeid','L2_name','L3_pseeid','L3_name',\
+                'L4_pseeid','L4_name','L5_pseeid','L5_name','L6_pseeid','L6_name',\
+                'L7_pseeid','L7_name','L8_name','L9_name','L10_name','comp_grade',\
                 'comp_grade_profile','headcount_group','status','regular_or_temp',\
                 'ft_or_pt','gender','ethnicity','marital_status','military_status',\
                 'email','userid','mgr_eeid','mgr_legal_name','mgr_email','manager_userid',\
@@ -139,6 +139,20 @@ oath['eeid'] = oath['eeid'].apply('{0:0>6}'.format)
 oath.loc[is_yahoo, 'eeid'] = 'Y' + oath['eeid']
 oath.loc[~is_yahoo, 'eeid'] = 'A' + oath['eeid']
 
+# lookup AOL/Yahoo numeric eeids for management chain (CEO -> L10)
+oath['CEO_eeid'] = 'A188900'
+oath['L2_eeid'] = vlookup(oath, oath, 'L2_pseeid', 'aol_eeid', 'eeid')
+L2_L7_pseeid_cols = ['L2_pseeid','L3_pseeid','L4_pseeid','L5_pseeid','L6_pseeid','L7_pseeid']
+L2_L7_eeid_cols = ['L2_eeid','L3_eeid','L4_eeid','L5_eeid','L6_eeid','L7_eeid']
+for i in range(len(L2_L7_pseeid_cols)):
+    curr_pseeid, curr_eeid = L2_L7_pseeid_cols[i], L2_L7_eeid_cols[i]
+    oath[curr_eeid] = vlookup(oath, oath, curr_pseeid, 'aol_eeid', 'eeid')     
+L8_L10_name_cols = ['L8_name','L9_name','L10_name']
+L8_L10_eeid_cols = ['L8_eeid','L9_eeid','L10_eeid']
+for i in range(len(L8_L10_name_cols)):
+    curr_name, curr_eeid = L8_L10_name_cols[i], L8_L10_eeid_cols[i]
+    oath[curr_eeid] = vlookup(oath, oath, curr_name, 'legal_name', 'eeid')
+
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
     oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
@@ -197,27 +211,36 @@ oath.loc[is_intern, 'emp_type'] = 'Employee Type - Intern'
 oath.loc[(is_employee) & (~is_intern), 'emp_type'] = 'Employee Type - Regular'
 
 # Current Worker Details columns (includes contingent workers)
-cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
-                    'original_hire_date','active_status','ft_or_pt','fte_pct','email',\
-                    'acquired_company','job_code','job_profile','job_family_group','job_family',\
-                    'job_level','job_category','mgmt_level','comp_grade_profile','pay_rate_type',\
-                    'work_office','wfh_flag','work_country','work_region','CEO_name','L2_name',\
-                    'L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name']
+cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
+                    'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
+                    'ft_or_pt','fte_pct','email','acquired_company','job_code','job_profile',\
+                    'job_family_group','job_family','job_level','job_category','mgmt_level',\
+                    'comp_grade_profile','pay_rate_type','work_office','wfh_flag','work_country',\
+                    'work_region','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+                    'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
+                    'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
+                    'L3_org_name']
 
 cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
 # Comp Kitchen Sink columns (includes contingent workers)
-cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
-            'original_hire_date','active_status','ft_or_pt','fte_pct','std_hrs','email',\
-            'acquired_company','job_code','job_profile','job_family_group','job_family','job_level',\
-            'job_category','mgmt_level','comp_grade','comp_grade_profile','pay_rate_type','flsa',\
-            'currency_code','base_annualized_local','base_annualized_usd','bonus_plan',\
-            'target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd','ttc_annualized_local',\
-            'ttc_annualized_usd','wfh_flag','work_office',\
-            'work_city','work_state','work_country','work_region','CEO_name','L2_name','L3_name',\
-            'L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L2_org_name','L3_org_name']
+cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
+            'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
+            'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
+            'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
+            'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
+            'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
+            'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
+            'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+            'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
+            'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
+            'L2_org_name','L3_org_name']
 
 cks = oath.loc[:, cks_cols]
+
+# writer = pandas.ExcelWriter('test_cks.xlsx')
+# cks.to_excel(writer,'Sheet1', index=False)
+# writer.save()
 
 # # remove employees either (1) offboarded, (2) on transition, (3) future term
 # # oath = oath[~oath['work_email'].isin(offboards['work_email'])]
