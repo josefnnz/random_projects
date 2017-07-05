@@ -131,13 +131,13 @@ for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name'
 
 # reformat WFH flag
 is_wfh = oath['wfh_flag'].str.contains("Yes",case=False)
-oath[is_wfh, 'wfh_flag'] = 'WFH'
-oath[~is_wfh, 'wfh_flag'] = None
+oath.loc[is_wfh, 'wfh_flag'] = 'WFH'
+oath.loc[~is_wfh, 'wfh_flag'] = None
 
 # create acquired company field (AOL/Yahoo)
 is_yahoo = oath['company'].str.contains("yahoo",case=False)
-oath[is_yahoo, 'acquired_company'] = 'Yahoo'
-oath[~is_yahoo, 'acquired_company'] = 'AOL'
+oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
+oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
 
 # merge in Workday office names
 oath['work_office'] = vlookup(oath, offices, 'work_office', 'ps_office_name', 'wd_office_name')
