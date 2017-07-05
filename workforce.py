@@ -34,12 +34,12 @@ oath = pandas.ExcelFile(oath_filepath).parse(oath_sheet)
 # oath_filepath = setwd+"roster.csv"
 # oath = pandas.read_csv(oath_filepath, low_memory=False)
 oath.columns = ['wf_group','worker_type','yahoo_eeid','yahoo_userid','aol_eeid',\
-                'legal_name','L1_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+                'legal_name','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
                 'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
                 'L7_eeid','L7_name','L8_name','L9_name','L10_name','comp_grade',\
                 'comp_grade_profile','headcount_group','status','regular_or_temp',\
                 'ft_or_pt','gender','ethnicity','marital_status','military_status',\
-                'email','userid','mgr_eeid','mgr_name','mgr_email','manager_userid',\
+                'email','userid','mgr_eeid','mgr_legal_name','mgr_email','manager_userid',\
                 'acquired_company','contract_type','contractor_type',\
                 'contract_number','contract_status','msp_or_nonmsp',\
                 'contract_start_date','contract_end_date','contract_provider_id',\
@@ -120,6 +120,10 @@ georegions.drop_duplicates('city', inplace=True)
 # emailremap.drop_duplicates('aol_work_email', inplace=True)
 ################################################################################
 
+# change name fields format from "Last, First" to "First Last"
+for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
+	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
+
 oath.loc[:, 'active_status'] = 'Y'
 oath.loc[:, 'emp_type'] = 'placeholder'
 oath.loc[:, 'job_family_group'] = 'placeholder'
@@ -163,7 +167,7 @@ oath.loc[:, 'currency_code'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_
 oath.loc[:, 'bonus plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan')
 oath.loc[:, 'target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct')
 
-ced_nonsens_cols = ['eeid','legal_name','mgr_eeid','mgr_name','mgr_email','userid','last_hire_date',\
+ced_nonsens_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
                     'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','email',\
                     'acquired_company','job_code','job_profile','job_family_group','job_family',\
                     'job_level','job_category','mgmt_level','comp_grade_profile','pay_rate_type',\
@@ -172,7 +176,7 @@ ced_nonsens_cols = ['eeid','legal_name','mgr_eeid','mgr_name','mgr_email','useri
 
 ced_nonsens = oath.loc[:, ced_nonsens_cols]
 
-cks_cols = ['eeid','legal_name','mgr_eeid','mgr_name','mgr_email','userid','last_hire_date',\
+cks_cols = ['eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email','userid','last_hire_date',\
             'original_hire_date','active_status','emp_type','ft_or_pt','fte_pct','std_hrs','email',\
             'acquired_company','job_code','job_profile','job_family_group','job_family','job_level',\
             'job_category','mgmt_level','comp_grade','comp_grade_profile','pay_rate_type','flsa',\
@@ -196,9 +200,6 @@ cks = oath.loc[:, cks_cols]
 # oath = pandas.merge(oath, l3orgnames.query('L2_or_L3 == "L3"')[['ps_L3_name','orgname']], how='left', left_on='L3', right_on='ps_L3_name')
 # oath.rename(columns={'orgname' : 'L3_orgname'}, inplace=True)
 
-# # change name fields format from "Last, First" to "First Last"
-# for x in ['legal_name','mgr_legal_name','CEO','L2','L3','L4','L5','L6','L7','L8','L9','L10']:
-# 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
 # # extract relevant fields
 # final_report = oath[['eeid','legal_name','work_email','userid','status','last_hire_date','regular_or_temp','full_time_or_part_time',\
