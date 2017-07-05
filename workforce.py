@@ -41,7 +41,7 @@ oath.columns = ['wf_group','worker_type','yahoo_eeid','yahoo_userid','aol_eeid',
                 'L7_pseeid','L7_name','L8_name','L9_name','L10_name','comp_grade',\
                 'comp_grade_profile','headcount_group','status','regular_or_temp',\
                 'ft_or_pt','gender','ethnicity','marital_status','military_status',\
-                'email','userid','mgr_eeid','mgr_legal_name','mgr_email','manager_userid',\
+                'email','userid','mgr_pseeid','mgr_legal_name','mgr_email','manager_userid',\
                 'acquired_company','contract_type','contractor_type',\
                 'contract_number','contract_status','msp_or_nonmsp',\
                 'contract_start_date','contract_end_date','contract_provider_id',\
@@ -152,6 +152,7 @@ L8_L10_eeid_cols = ['L8_eeid','L9_eeid','L10_eeid']
 for i in range(len(L8_L10_name_cols)):
     curr_name, curr_eeid = L8_L10_name_cols[i], L8_L10_eeid_cols[i]
     oath[curr_eeid] = vlookup(oath, oath, curr_name, 'legal_name', 'eeid')
+oath['mgr_eeid'] = vlookup(oath, oath, 'mgr_pseeid', 'aol_eeid', 'eeid')
 
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
@@ -238,9 +239,9 @@ cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_n
 
 cks = oath.loc[:, cks_cols]
 
-# writer = pandas.ExcelWriter('test_cks.xlsx')
-# cks.to_excel(writer,'Sheet1', index=False)
-# writer.save()
+writer = pandas.ExcelWriter('test_cks.xlsx')
+cks.to_excel(writer,'Sheet1', index=False)
+writer.save()
 
 # # remove employees either (1) offboarded, (2) on transition, (3) future term
 # # oath = oath[~oath['work_email'].isin(offboards['work_email'])]
