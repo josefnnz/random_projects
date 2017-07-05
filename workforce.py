@@ -124,6 +124,11 @@ georegions.drop_duplicates('city', inplace=True)
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
 	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
+# create acquired company field (AOL/Yahoo)
+is_yahoo = oath.loc[:, 'company'].str.contains("yahoo",case=False)
+oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
+oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
+
 oath.loc[:, 'active_status'] = 'Y'
 oath.loc[:, 'emp_type'] = 'placeholder'
 oath.loc[:, 'job_family_group'] = 'placeholder'
