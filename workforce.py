@@ -127,19 +127,26 @@ regions.drop_duplicates('country', inplace=True)
 # immediately remove workers marked as not used for headcount reporting
 oath = oath.loc[~oath["wf_group"].str.contains("Not Used for WF Report",case=False)]
 
+# create acquired company field (AOL/Yahoo) and merge AOL/Yahoo numeric eeids into one column
+is_yahoo = oath['company'].str.contains("yahoo",case=False)
+oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
+oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
+oath['eeid'] = None
+is_yahoo_with_workday_id = (is_yahoo) & (oath['yahoo_eeid'].notnull())
+oath.loc[is_yahoo_with_workday_id, 'eeid'] = oath['yahoo_eeid']
+oath.loc[oath['eeid'].isnull(), 'eeid'] = oath['aol_eeid']
+oath['eeid'] = oath['eeid'].apply('{0:0>6}'.format)
+oath.loc[is_yahoo, 'eeid'] = 'Y' + oath['eeid']
+oath.loc[~is_yahoo, 'eeid'] = 'A' + oath['eeid']
+
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
-	oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
+    oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
 # reformat WFH flag
 is_wfh = oath['wfh_flag'].str.contains("Yes",case=False)
 oath.loc[is_wfh, 'wfh_flag'] = 'WFH'
 oath.loc[~is_wfh, 'wfh_flag'] = None
-
-# create acquired company field (AOL/Yahoo)
-is_yahoo = oath['company'].str.contains("yahoo",case=False)
-oath.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
-oath.loc[~is_yahoo, 'acquired_company'] = 'AOL'
 
 # reformat Full time / Part time field
 oath.loc[oath['ft_or_pt'].str.contains("Full-Time",case=False), 'ft_or_pt'] = 'Full time'
