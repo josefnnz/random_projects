@@ -120,10 +120,6 @@ regions = mappings.parse('Regions')
 regions.columns = ['country', 'region']
 regions.drop_duplicates('country', inplace=True)
 
-# # load AOL to Yahoo email
-# emailremap = mappings.parse("EmailRemap")
-# emailremap.columns = ['emp_name','aol_work_email','yahoo_work_email']
-# emailremap.drop_duplicates('aol_work_email', inplace=True)
 ################################################################################
 
 # change name fields format from "Last, First" to "First Last"
