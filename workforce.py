@@ -231,7 +231,9 @@ oath['target_abp_exception_flag'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 
 oath['target_abp_plan_yr'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_plan_yr', 'target_abp_plan_yr')
 
 oath.loc[oath['target_abp_pct']>0, 'target_bonus_pct'] = oath['target_abp_pct']
+oath.loc[oath['target_abp_pct']>0, 'bonus_plan'] = 'AOL Bonus Plan'
 oath.loc[oath['sales_incentive_target_amt_local']>0, 'target_bonus_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local']
+oath.loc[oath['sales_incentive_target_amt_local']>0, 'bonus_plan'] = 'AOL Sales Incentive Plan'
 
 # oath['target_abp_pct'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_pct', 'abp_target_pct_new')
 # oath['target_sip_pct'] = vlookup(oath, acomp, 'eeid', 'eeid', 'sip_target_pct_new')
