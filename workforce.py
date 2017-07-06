@@ -294,24 +294,22 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 # cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
 # writer_cwd.save()
 
-# # Comp Kitchen Sink columns (includes contingent workers)
-# cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
-#             'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
-#             'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
-#             'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-#             'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
-#             'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
-#             'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
-#             'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
-#             'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
-#             'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-#             'L2_org_name','L3_org_name','L4_org_name']
-
-# cks = oath.loc[:, cks_cols]
-
-# writer = pandas.ExcelWriter('test_cks.xlsx')
-# cks.to_excel(writer,'Sheet1', index=False)
-# writer.save()
+# Comp Kitchen Sink columns (includes contingent workers)
+cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
+            'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
+            'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
+            'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
+            'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
+            'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
+            'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
+            'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+            'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
+            'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
+            'L2_org_name','L3_org_name','L4_org_name']
+cks = employees.loc[:, cks_cols]
+writer = pandas.ExcelWriter('outputs/Oath Comp Kitchen Sink '+DATETIMESTAMP+'.xlsx')
+cks.to_excel(writer,'Sheet1', index=False)
+writer.save()
 
 cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
                  'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
@@ -324,10 +322,8 @@ cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_le
                  'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
                  'L2_org_name','L3_org_name','L4_org_name','last_day_of_work','term_date']
-
 cwd_sens = oath.loc[:, cwd_sens_cols]
-
-writer_cwd_sens = pandas.ExcelWriter('current_worker_details_sensitive ' + DATETIMESTAMP + '.xlsx')
+writer_cwd_sens = pandas.ExcelWriter('outputs/Current Worker Details - Sensitive with Demographic Data' + DATETIMESTAMP + '.xlsx')
 cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
 writer_cwd_sens.save()
 
