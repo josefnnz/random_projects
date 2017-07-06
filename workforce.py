@@ -1,5 +1,6 @@
 import pandas
 import numpy
+import datetime
 
 # FOR REFERENCE: counts by group is df.groupby('colname').size()
 
@@ -114,14 +115,19 @@ offices.columns = ['ps_office_name','wd_office_name','wfh_flag']
 offices.drop_duplicates('ps_office_name', inplace=True)
 
 # load L2 legal name to L2 org name
-l2orgnames = mappings.parse("L2OrgNames")
-l2orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L3_name','orgname']
-l2orgnames.drop_duplicates('ps_L2_name', inplace=True)
+orgnames = mappings.parse("OrgNames")
+orgnames.columns = ['layer','eeid','leader_name','leader_org_name']
+orgnames.drop_duplicates('eeid', inplace=True)
 
-# load L3 legal name to L3 org name
-l3orgnames = mappings.parse("L3OrgNames")
-l3orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L3_name','orgname']
-l3orgnames.drop_duplicates('ps_L3_name', inplace=True)
+# # load L2 legal name to L2 org name
+# l2orgnames = mappings.parse("L2OrgNames")
+# l2orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L3_name','orgname']
+# l2orgnames.drop_duplicates('ps_L2_name', inplace=True)
+
+# # load L3 legal name to L3 org name
+# l3orgnames = mappings.parse("L3OrgNames")
+# l3orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L3_name','orgname']
+# l3orgnames.drop_duplicates('ps_L3_name', inplace=True)
 
 # load Oath job catalog
 oath_jobs = mappings.parse("Jobs")
@@ -194,9 +200,8 @@ oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='
 # merge in Workday region names
 oath['work_region'] = vlookup(oath, regions, 'work_country', 'country', 'region')
 
+# set active status value for all active workers
 oath['active_status'] = 'Yes'
-oath['L2_org_name'] = 'placeholder'
-oath['L3_org_name'] = 'placeholder'
 
 # merge in Oath job details
 oath['job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
@@ -241,10 +246,10 @@ oath.loc[oath['sales_incentive_target_amt_local']>0, 'bonus_plan'] = 'AOL Sales 
 # oath.loc[oath['target_abp_pct']<=0, 'target_bonus_pct'] = oath['target_sip_pct']
 
 # compute target bonus amount and target TTC
-oath['target_bonus_amt_local'] = oath['base_annualized_local'] * oath['target_bonus_pct']
-oath['target_bonus_amt_usd'] = oath['base_annualized_usd'] * oath['target_bonus_pct']
-oath['ttc_annualized_local'] = oath['base_annualized_local'] + oath['target_bonus_amt_local']
-oath['ttc_annualized_usd'] = oath['base_annualized_usd'] + oath['target_bonus_amt_usd']
+oath['target_bonus_amt_local'] = oath['base_annualized_local'].astype(float) * oath['target_bonus_pct'].astype(float)
+oath['target_bonus_amt_usd'] = oath['base_annualized_usd'].astype(float) * oath['target_bonus_pct'].astype(float)
+oath['ttc_annualized_local'] = oath['base_annualized_local'].astype(float) + oath['target_bonus_amt_local'].astype(float)
+oath['ttc_annualized_usd'] = oath['base_annualized_usd'].astype(float) + oath['target_bonus_amt_usd'].astype(float)
 
 # complete worker and employee types -- NEEDS TO BE DONE AFTER JOB DETAILS HAVE BEEN MERGED INTO OATH DATA FRAME
 oath['worker_type'], oath['emp_type'] = None, None
@@ -262,6 +267,16 @@ oath['flsa'].replace({'N':'Non-Exempt', 'Nonexempt':'Non-Exempt', 'Y':'Exempt', 
 oath['last_day_of_work'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_ldw')
 oath['term_date'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date')
 
+# merge in L2-L4 org names
+oath['L2_org_name'] = vlookup(oath, orgnames, 'L2_eeid', 'eeid', 'leader_org_name')
+oath['L3_org_name'] = vlookup(oath, orgnames, 'L3_eeid', 'eeid', 'leader_org_name')
+oath['L4_org_name'] = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name')
+
+oath = oath.sort_values(by='eeid', ascending=True)
+employees = oath.loc[oath['worker_type']=='Employee']
+
+DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
+
 # # Current Worker Details columns (includes contingent workers)
 # cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
 #                     'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
@@ -271,7 +286,7 @@ oath['term_date'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date')
 #                     'work_region','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
 #                     'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
 #                     'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
-#                     'L3_org_name']
+#                     'L3_org_name','L4_org_name']
 
 # cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
@@ -290,7 +305,7 @@ oath['term_date'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date')
 #             'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
 #             'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
 #             'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-#             'L2_org_name','L3_org_name']
+#             'L2_org_name','L3_org_name','L4_org_name']
 
 # cks = oath.loc[:, cks_cols]
 
@@ -308,11 +323,11 @@ cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_le
                  'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
                  'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-                 'L2_org_name','L3_org_name','last_day_of_work','term_date']
+                 'L2_org_name','L3_org_name','L4_org_name','last_day_of_work','term_date']
 
 cwd_sens = oath.loc[:, cwd_sens_cols]
 
-writer_cwd_sens = pandas.ExcelWriter('current_worker_details_sensitive.xlsx')
+writer_cwd_sens = pandas.ExcelWriter('current_worker_details_sensitive ' + DATETIMESTAMP + '.xlsx')
 cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
 writer_cwd_sens.save()
 
