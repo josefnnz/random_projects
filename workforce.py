@@ -272,6 +272,9 @@ oath['L2_org_name'] = vlookup(oath, orgnames, 'L2_eeid', 'eeid', 'leader_org_nam
 oath['L3_org_name'] = vlookup(oath, orgnames, 'L3_eeid', 'eeid', 'leader_org_name')
 oath['L4_org_name'] = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name')
 
+# Remove duplicate employees -- AOLers with laptops deployed on the Yahoo network
+oath = oath.loc[oath['eeid']!='Y00000 ']
+
 oath = oath.sort_values(by='eeid', ascending=True)
 employees = oath.loc[oath['worker_type']=='Employee']
 
