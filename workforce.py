@@ -98,6 +98,11 @@ acomp.columns = ['eeid','aol_eeid','emp_name','aol_job_code','is_aol_sales_ee','
                  'sales_incentive_target_amt_local','sales_incentive_target_amt_usd','target_abp_pct',\
                  'target_abp_amt_local','target_abp_amt_usd','target_abp_exception_flag','target_abp_plan_yr']
 
+# # load exchange rates
+# fxrates_filepath, fxrates_sheet, fxrates_skiprows = setwd+"fxrates.xlsx", "Currency Rates", 3
+# fxrates = pandas.ExcelFile(fxrates_filepath).parse(fxrates_sheet, skiprows=fxrates_skiprows)
+# fxrates.columns = ['source_currency','target_currency','fxrate_type','fxrate_timestamp','fxrate']
+
 ################################################################################
 ##### Load Mappings Tables
 
@@ -208,6 +213,7 @@ oath['yahoo_target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid'
 oath['last_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'last_hire_date', 'last_hire_date')
 oath['original_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'original_hire_date', 'original_hire_date')
 oath['userid'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
+# oath['fxrate'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'fx_rate') # for AlixPartners report
 
 # merge AOL comp details
 oath['sales_incentive_guarantee'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_guarantee', 'sales_incentive_guarantee')
@@ -322,7 +328,7 @@ alixpartners_cols = ['worker_type','emp_type','eeid','badge_id','legal_name','mg
                      'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
                      'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
                      'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-                     'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
+                     'pay_rate_type','flsa','currency_code','base_annualized_local','base_annualized_usd',\
                      'target_abp_plan_yr','target_abp_pct','target_abp_amt_local','target_abp_amt_usd',\
                      'target_abp_exception_flag','sales_incentive_plan_yr','sales_incentive_target_amt_local',\
                      'sales_incentive_target_amt_usd','sales_incentive_guarantee','yahoo_bonus_plan','yahoo_target_bonus_pct',\
