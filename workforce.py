@@ -87,6 +87,13 @@ offboards.columns = ['is_reduction','comment','pending_term_entry','ldw_wd','ldw
                      'badge_id','emp_name','company','l2_org_name','alixpartners_transition_date',\
                      'talent_decision']
 
+# load Yahoo promos
+ypromos_filepath, ypromos_sheet = setwd+"yahoo_promos.xlsx", "Sheet1"
+ypromos = pandas.ExcelFile(ypromos_filepath).parse(ypromos_sheet)
+ypromos.columns = ['emp_name', 'eeid', 'company', 'oath_job_code', 'oath_job_profile', 'comment']
+ypromos['oath_job_code'] = ypromos['oath_job_code'].apply('{0:0>6}'.format) # reformat job code for lookup
+
+
 # acomp_filepath, acomp_sheet = setwd+"aol_comp.xlsx", "Sheet1"
 # acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
 # acomp.columns = ['first_name','last_name','eeid','company','email','oath_l2_org_name',\
@@ -184,10 +191,11 @@ oath['mgr_eeid'] = vlookup(oath, oath, 'mgr_pseeid', 'aol_eeid', 'eeid')
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
     oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
-# reformat WFH flag
-is_wfh = oath['wfh_flag'].str.contains("Yes",case=False)
-oath.loc[is_wfh, 'wfh_flag'] = 'WFH'
-oath.loc[~is_wfh, 'wfh_flag'] = None
+# # reformat WFH flag
+# oath['wfh_flag']
+# is_wfh = oath['wfh_flag'].str.contains("Yes",case=False)
+# oath.loc[is_wfh, 'wfh_flag'] = 'WFH'
+# oath.loc[~is_wfh, 'wfh_flag'] = None
 
 # reformat Full time / Part time field
 oath.loc[oath['ft_or_pt'].str.contains("Full-Time",case=False), 'ft_or_pt'] = 'Full time'
@@ -195,13 +203,16 @@ oath.loc[oath['ft_or_pt'].str.contains("Part-Time",case=False), 'ft_or_pt'] = 'P
 
 # merge in Workday office names
 oath['work_office'] = vlookup_update(oath, offices, 'work_office', 'ps_office_name', 'work_office', 'wd_office_name')
-oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
+oath['wfh_flag'].replace({'No':None, 'Yes':'WFH'}, inplace=True)
 
 # merge in Workday region names
 oath['work_region'] = vlookup(oath, regions, 'work_country', 'country', 'region')
 
 # set active status value for all active workers
 oath['active_status'] = 'Yes'
+
+# update Yahoo promos with correct Oath job code -- NEEDS TO BE DONE BEFORE MERGING OATH JOB DETAILS
+oath['job_code'] = vlookup_update(oath, ypromos, 'eeid', 'eeid', 'job_code', 'oath_job_code')
 
 # merge in Oath job details
 oath['job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
