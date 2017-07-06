@@ -275,6 +275,9 @@ oath['L4_org_name'] = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_nam
 # Remove duplicate employees -- AOLers with laptops deployed on the Yahoo network
 oath = oath.loc[oath['eeid']!='Y00000 ']
 
+# Remove employees with Last Days of Work < Current Day
+oath = oath.loc[(oath['last_day_of_work'].isnull()) | (oath['last_day_of_work'] >= datetime.datetime.now().strftime("%Y-%m-%d 0:00:00"))]
+
 oath = oath.sort_values(by='eeid', ascending=True)
 employees = oath.loc[oath['worker_type']=='Employee']
 
@@ -326,7 +329,7 @@ cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_le
                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
                  'L2_org_name','L3_org_name','L4_org_name','last_day_of_work','term_date']
 cwd_sens = oath.loc[:, cwd_sens_cols]
-writer_cwd_sens = pandas.ExcelWriter('outputs/Current Worker Details - Sensitive with Demographic Data' + DATETIMESTAMP + '.xlsx')
+writer_cwd_sens = pandas.ExcelWriter('outputs/Current Worker Details - Sensitive with Demographic Data ' + DATETIMESTAMP + '.xlsx')
 cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
 writer_cwd_sens.save()
 
