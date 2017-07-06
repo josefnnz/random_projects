@@ -34,8 +34,6 @@ setwd = "/Users/josefnunez/workforce/"
 # load Oath workforce roster, i.e. PeopleSoft report
 oath_filepath, oath_sheet = setwd+"roster.xlsx", "Sheet1"
 oath = pandas.ExcelFile(oath_filepath).parse(oath_sheet)
-# oath_filepath = setwd+"roster.csv"
-# oath = pandas.read_csv(oath_filepath, low_memory=False)
 oath.columns = ['wf_group','worker_type','yahoo_eeid','yahoo_userid','aol_eeid',\
                 'legal_name','CEO_name','L2_pseeid','L2_name','L3_pseeid','L3_name',\
                 'L4_pseeid','L4_name','L5_pseeid','L5_name','L6_pseeid','L6_name',\
@@ -93,16 +91,6 @@ ypromos = pandas.ExcelFile(ypromos_filepath).parse(ypromos_sheet)
 ypromos.columns = ['emp_name', 'eeid', 'company', 'oath_job_code', 'oath_job_profile', 'comment']
 ypromos['oath_job_code'] = ypromos['oath_job_code'].apply('{0:0>6}'.format) # reformat job code for lookup
 
-
-# acomp_filepath, acomp_sheet = setwd+"aol_comp.xlsx", "Sheet1"
-# acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
-# acomp.columns = ['first_name','last_name','eeid','company','email','oath_l2_org_name',\
-#                  'oath_job_code','oath_job_profile','local_currency','base_current','base_new',\
-#                  'hourly_rate_current','hourly_rate_new','abp_target_pct_current',\
-#                  'abp_target_amt_current','abp_target_pct_new','abp_target_amt_new',\
-#                  'sip_target_pct_current','sip_target_amt_current','sip_target_pct_new',\
-#                  'sip_target_amt_new','ttc_current','ttc_new']
-
 acomp_filepath, acomp_sheet = setwd+"aol_bonuses.xlsx", "Sheet1"
 acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
 acomp.columns = ['eeid','aol_eeid','emp_name','aol_job_code','is_aol_sales_ee','company',\
@@ -125,16 +113,6 @@ offices.drop_duplicates('ps_office_name', inplace=True)
 orgnames = mappings.parse("OrgNames")
 orgnames.columns = ['layer','eeid','leader_name','leader_org_name']
 orgnames.drop_duplicates('eeid', inplace=True)
-
-# # load L2 legal name to L2 org name
-# l2orgnames = mappings.parse("L2OrgNames")
-# l2orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L3_name','orgname']
-# l2orgnames.drop_duplicates('ps_L2_name', inplace=True)
-
-# # load L3 legal name to L3 org name
-# l3orgnames = mappings.parse("L3OrgNames")
-# l3orgnames.columns = ['L2_or_L3','ps_L2_name','wd_L2_name','ps_L3_name','wd_L3_name','orgname']
-# l3orgnames.drop_duplicates('ps_L3_name', inplace=True)
 
 # load Oath job catalog
 oath_jobs = mappings.parse("Jobs")
@@ -191,12 +169,6 @@ oath['mgr_eeid'] = vlookup(oath, oath, 'mgr_pseeid', 'aol_eeid', 'eeid')
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
     oath[x] = [" ".join(reversed(w.split(", "))) for w in oath[x]]
 
-# # reformat WFH flag
-# oath['wfh_flag']
-# is_wfh = oath['wfh_flag'].str.contains("Yes",case=False)
-# oath.loc[is_wfh, 'wfh_flag'] = 'WFH'
-# oath.loc[~is_wfh, 'wfh_flag'] = None
-
 # reformat Full time / Part time field
 oath.loc[oath['ft_or_pt'].str.contains("Full-Time",case=False), 'ft_or_pt'] = 'Full time'
 oath.loc[oath['ft_or_pt'].str.contains("Part-Time",case=False), 'ft_or_pt'] = 'Part time'
@@ -250,11 +222,6 @@ oath.loc[oath['target_abp_pct']>0, 'target_bonus_pct'] = oath['target_abp_pct']
 oath.loc[oath['target_abp_pct']>0, 'bonus_plan'] = 'AOL Bonus Plan'
 oath.loc[oath['sales_incentive_target_amt_local']>0, 'target_bonus_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local']
 oath.loc[oath['sales_incentive_target_amt_local']>0, 'bonus_plan'] = 'AOL Sales Incentive Plan'
-
-# oath['target_abp_pct'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_pct', 'abp_target_pct_new')
-# oath['target_sip_pct'] = vlookup(oath, acomp, 'eeid', 'eeid', 'sip_target_pct_new')
-# oath.loc[oath['target_abp_pct']>0, 'target_bonus_pct'] = oath['target_abp_pct']
-# oath.loc[oath['target_abp_pct']<=0, 'target_bonus_pct'] = oath['target_sip_pct']
 
 # compute target bonus amount and target TTC
 oath['target_bonus_amt_local'] = oath['base_annualized_local'].astype(float) * oath['target_bonus_pct'].astype(float)
@@ -344,12 +311,6 @@ writer_cwd_sens = pandas.ExcelWriter('outputs/Current Worker Details - Sensitive
 cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
 writer_cwd_sens.save()
 
-
-# # remove employees either (1) offboarded, (2) on transition, (3) future term
-# # oath = oath[~oath['work_email'].isin(offboards['work_email'])]
-# oath = oath[oath['separations_date'].isnull()]
-# #oath = oath[(~oath['company'].str.contains("yahoo",case=False)) | (oath['work_email'].isin(yactive))] # remove inactive Yahoos -- keep all Aolers
-
 # # merge in Oath geo regions
 # oath['work_country'].replace({"Korea, Republic of" : "Republic of Korea"}, inplace=True) # reformat Republic of Korea
 # oath = pandas.merge(oath, georegions[['city','georegion']], how='left', left_on='work_city', right_on='city')
@@ -362,12 +323,3 @@ writer_cwd_sens.save()
 # oath.loc[oath['local_currency_y'].notnull(), 'local_currency_x'] = oath['local_currency_y'] # put Yahoo local currency in main column
 # oath.loc[(oath['sales_beginning_date'].notnull()) & (oath['sales_incentive_target_amt_local'] > 0), 'target_abp_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local'] # compute Sales bonus targets
 
-# # merge in L2 and L3 org names
-# oath = pandas.merge(oath, l2orgnames.query('L2_or_L3 == "L2"')[['ps_L2_name','orgname']], how='left', left_on='L2', right_on='ps_L2_name')
-# oath.rename(columns={'orgname' : 'L2_orgname'}, inplace=True)
-# oath = pandas.merge(oath, l3orgnames.query('L2_or_L3 == "L3"')[['ps_L3_name','orgname']], how='left', left_on='L3', right_on='ps_L3_name')
-# oath.rename(columns={'orgname' : 'L3_orgname'}, inplace=True)
-
-# writer = pandas.ExcelWriter('output.xlsx')
-# final_report.to_excel(writer,'Sheet1', index=False)
-# writer.save()
