@@ -80,8 +80,27 @@ yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheet, skiprows=yacti
 yactive.columns = ['yahoo_eeid','email','yahoo_userid','worker_type','emp_type']
 
 # load final offboards list from AlixPartners
-# offboards = pandas.ExcelFile("/Users/josefnunez/workforce/offboards.xlsx").parse("Sheet1")
-# offboards.columns = ['work_email','badge_id','company','last_day_of_work']
+offboards = pandas.ExcelFile("/Users/josefnunez/workforce/offboards.xlsx").parse("Sheet1")
+offboards.columns = ['is_reduction','comment','pending_term_entry','ldw_wd','ldw_wd_ps',\
+                     'transition_date','final_ldw','final_term_date','eeid','text_badge_id',\
+                     'badge_id','emp_name','company','l2_org_name','alixpartners_transition_date',\
+                     'talent_decision']
+
+# acomp_filepath, acomp_sheet = setwd+"aol_comp.xlsx", "Sheet1"
+# acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
+# acomp.columns = ['first_name','last_name','eeid','company','email','oath_l2_org_name',\
+#                  'oath_job_code','oath_job_profile','local_currency','base_current','base_new',\
+#                  'hourly_rate_current','hourly_rate_new','abp_target_pct_current',\
+#                  'abp_target_amt_current','abp_target_pct_new','abp_target_amt_new',\
+#                  'sip_target_pct_current','sip_target_amt_current','sip_target_pct_new',\
+#                  'sip_target_amt_new','ttc_current','ttc_new']
+
+acomp_filepath, acomp_sheet = setwd+"aol_bonuses.xlsx", "Sheet1"
+acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
+acomp.columns = ['eeid','aol_eeid','emp_name','aol_job_code','is_aol_sales_ee','company',\
+                 'comp_freq','local_currency','sales_incentive_guarantee','sales_incentive_plan_yr',\
+                 'sales_incentive_target_amt_local','sales_incentive_target_amt_usd','target_abp_pct',\
+                 'target_abp_amt_local','target_abp_amt_usd','target_abp_exception_flag','target_abp_plan_yr']
 
 ################################################################################
 ##### Load Mappings Tables
@@ -169,7 +188,7 @@ oath.loc[oath['ft_or_pt'].str.contains("Full-Time",case=False), 'ft_or_pt'] = 'F
 oath.loc[oath['ft_or_pt'].str.contains("Part-Time",case=False), 'ft_or_pt'] = 'Part time'
 
 # merge in Workday office names
-oath['work_office'] = vlookup(oath, offices, 'work_office', 'ps_office_name', 'wd_office_name')
+oath['work_office'] = vlookup_update(oath, offices, 'work_office', 'ps_office_name', 'work_office', 'wd_office_name')
 oath = pandas.merge(oath, offices, how='left', left_on='work_office', right_on='ps_office_name')
 
 # merge in Workday region names
@@ -200,6 +219,25 @@ oath['last_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid',
 oath['original_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'original_hire_date', 'original_hire_date')
 oath['userid'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
 
+# merge AOL comp details
+oath['sales_incentive_guarantee'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_guarantee', 'sales_incentive_guarantee')
+oath['sales_incentive_plan_yr'] = vlookup(oath, acomp, 'eeid', 'eeid', 'sales_incentive_plan_yr')
+oath['sales_incentive_target_amt_local'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_target_amt_local', 'sales_incentive_target_amt_local')
+oath['sales_incentive_target_amt_usd'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_target_amt_usd', 'sales_incentive_target_amt_usd')
+oath['target_abp_pct'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_pct', 'target_abp_pct')
+oath['target_abp_amt_local'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_amt_local', 'target_abp_amt_local')
+oath['target_abp_amt_usd'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_amt_usd', 'target_abp_amt_usd')
+oath['target_abp_exception_flag'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_exception_flag', 'target_abp_exception_flag')
+oath['target_abp_plan_yr'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_plan_yr', 'target_abp_plan_yr')
+
+oath.loc[oath['target_abp_pct']>0, 'target_bonus_pct'] = oath['target_abp_pct']
+oath.loc[oath['sales_incentive_target_amt_local']>0, 'target_bonus_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local']
+
+# oath['target_abp_pct'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_pct', 'abp_target_pct_new')
+# oath['target_sip_pct'] = vlookup(oath, acomp, 'eeid', 'eeid', 'sip_target_pct_new')
+# oath.loc[oath['target_abp_pct']>0, 'target_bonus_pct'] = oath['target_abp_pct']
+# oath.loc[oath['target_abp_pct']<=0, 'target_bonus_pct'] = oath['target_sip_pct']
+
 # compute target bonus amount and target TTC
 oath['target_bonus_amt_local'] = oath['base_annualized_local'] * oath['target_bonus_pct']
 oath['target_bonus_amt_usd'] = oath['base_annualized_usd'] * oath['target_bonus_pct']
@@ -215,37 +253,67 @@ is_intern = oath['job_category'].str.contains('INT',case=False).fillna(False)
 oath.loc[is_intern, 'emp_type'] = 'Employee Type - Intern'
 oath.loc[(is_employee) & (~is_intern), 'emp_type'] = 'Employee Type - Regular'
 
-# Current Worker Details columns (includes contingent workers)
-cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
-                    'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
-                    'ft_or_pt','fte_pct','email','acquired_company','job_code','job_profile',\
-                    'job_family_group','job_family','job_level','job_category','mgmt_level',\
-                    'comp_grade_profile','pay_rate_type','work_office','wfh_flag','work_country',\
-                    'work_region','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
-                    'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
-                    'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
-                    'L3_org_name']
+# reformat FLSA field
+oath['flsa'].replace({'N':'Non-Exempt', 'Nonexempt':'Non-Exempt', 'Y':'Exempt', 'Exempt':'Exempt'}, inplace=True)
 
-cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
+# merge in Last Day of Work and Term Date -- NEEDS TO BE DONE AFTER EEID FORMATTED
+oath['last_day_of_work'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_ldw')
+oath['term_date'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date')
 
-# Comp Kitchen Sink columns (includes contingent workers)
-cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
-            'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
-            'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
-            'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-            'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
-            'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
-            'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
-            'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
-            'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
-            'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-            'L2_org_name','L3_org_name']
+# # Current Worker Details columns (includes contingent workers)
+# cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
+#                     'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
+#                     'ft_or_pt','fte_pct','email','acquired_company','job_code','job_profile',\
+#                     'job_family_group','job_family','job_level','job_category','mgmt_level',\
+#                     'comp_grade_profile','pay_rate_type','work_office','wfh_flag','work_country',\
+#                     'work_region','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+#                     'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
+#                     'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
+#                     'L3_org_name']
 
-cks = oath.loc[:, cks_cols]
+# cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
-writer = pandas.ExcelWriter('test_cks.xlsx')
-cks.to_excel(writer,'Sheet1', index=False)
-writer.save()
+# writer_cwd = pandas.ExcelWriter('current_worker_details.xlsx')
+# cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
+# writer_cwd.save()
+
+# # Comp Kitchen Sink columns (includes contingent workers)
+# cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
+#             'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
+#             'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
+#             'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
+#             'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
+#             'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
+#             'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
+#             'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+#             'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
+#             'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
+#             'L2_org_name','L3_org_name']
+
+# cks = oath.loc[:, cks_cols]
+
+# writer = pandas.ExcelWriter('test_cks.xlsx')
+# cks.to_excel(writer,'Sheet1', index=False)
+# writer.save()
+
+cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
+                 'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
+                 'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
+                 'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
+                 'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
+                 'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
+                 'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
+                 'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+                 'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
+                 'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
+                 'L2_org_name','L3_org_name','last_day_of_work','term_date']
+
+cwd_sens = oath.loc[:, cwd_sens_cols]
+
+writer_cwd_sens = pandas.ExcelWriter('current_worker_details_sensitive.xlsx')
+cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
+writer_cwd_sens.save()
+
 
 # # remove employees either (1) offboarded, (2) on transition, (3) future term
 # # oath = oath[~oath['work_email'].isin(offboards['work_email'])]
