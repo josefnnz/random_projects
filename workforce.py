@@ -22,12 +22,13 @@ def vlookup(left, right, left_key, right_key, right_col, new_col_name):
     return output
 
 def vlookup_update(left, right, left_key, right_key, left_col, right_col):
-    mleft = left.loc[:, [left_key, left_col]]
+    mleft = left.copy()
     mright = right.loc[:, [right_key, right_col]]
-    mleft.columns, mright.columns = ['key','lval'], ['key','rval']
-    output = pandas.merge(mleft, mright, how='left', on='key')
-    output.loc[output.loc[:, 'rval'].notnull(), 'lval'] = output.loc[:, 'rval']
-    return output.loc[:, 'lval'].to_frame()
+    mright.columns = [left_key, 'rval_lookup_col']
+    output = pandas.merge(mleft, mright, how='left', on=left_key)
+    output.loc[output.loc[:, 'rval_lookup_col'].notnull(), left_col] = output.loc[:, 'rval_lookup_col']
+    output.drop('rval_lookup_col', axis=1, inplace=True)
+    return output
 
 ################################################################################
 
@@ -175,7 +176,7 @@ oath.loc[oath['ft_or_pt'].str.contains("Full-Time",case=False), 'ft_or_pt'] = 'F
 oath.loc[oath['ft_or_pt'].str.contains("Part-Time",case=False), 'ft_or_pt'] = 'Part time'
 
 # merge in Workday office names
-oath['work_office'] = vlookup_update(oath, offices, 'work_office', 'ps_office_name', 'work_office', 'wd_office_name')
+oath = vlookup_update(oath, offices, 'work_office', 'ps_office_name', 'work_office', 'wd_office_name')
 oath['wfh_flag'].replace({'No':None, 'Yes':'WFH'}, inplace=True)
 
 # merge in Workday region names
@@ -185,30 +186,30 @@ oath = vlookup(oath, regions, 'work_country', 'country', 'region', 'work_region'
 oath['active_status'] = 'Yes'
 
 # update Yahoo promos with correct Oath job code -- NEEDS TO BE DONE BEFORE MERGING OATH JOB DETAILS
-oath['job_code'] = vlookup_update(oath, ypromos, 'eeid', 'eeid', 'job_code', 'oath_job_code')
+oath = vlookup_update(oath, ypromos, 'eeid', 'eeid', 'job_code', 'oath_job_code')
 
 # merge in Oath job details
-oath['job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
+oath = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
 oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_family_group', 'job_family_group')
-oath['job_family'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_family', 'oath_job_family')
+oath = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_family', 'oath_job_family')
 oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_level', 'job_level')
 oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_category', 'job_category')
 oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_mgmt_level', 'mgmt_level')
-oath['comp_grade'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'comp_grade', 'oath_comp_grade')
+oath = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'comp_grade', 'oath_comp_grade')
 oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type', 'pay_rate_type')
-oath['flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
+oath = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
 
 # merge Yahoo comp details
-oath['base_annualized_local'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
-oath['base_annualized_usd'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
-oath['currency_code'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
+oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
+oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
+oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
 oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan', 'bonus_plan')
 oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan', 'yahoo_bonus_plan') # for AlixPartners report
 oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct', 'target_bonus_pct')
 oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct', 'yahoo_target_bonus_pct') # for AlixPartners report
-oath['last_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'last_hire_date', 'last_hire_date')
-oath['original_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'original_hire_date', 'original_hire_date')
-oath['userid'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
+oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'last_hire_date', 'last_hire_date')
+oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'original_hire_date', 'original_hire_date')
+oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
 # oath['fxrate'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'fx_rate') # for AlixPartners report
 
 # # merge AOL comp details
