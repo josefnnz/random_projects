@@ -13,11 +13,13 @@ pandas.set_option('display.max_rows', None)
 ################################################################################
 ##### Helper functions
 
-def vlookup(left, right, left_key, right_key, right_col):
-    mleft = left.loc[:, left_key].to_frame()
+def vlookup(left, right, left_key, right_key, right_col, new_col_name):
+    mleft = left.copy()
     mright = right.loc[:, [right_key, right_col]]
-    result = pandas.merge(mleft, mright, how='left', left_on=left_key, right_on=right_key)
-    return result.loc[:, right_col].to_frame()
+    mright.columns = [left_key, 'rval_lookup_col']
+    output = pandas.merge(mleft, mright, how='left', on=left_key)
+    output.rename(columns={'rval_lookup_col':new_col_name}, inplace=True)
+    return output
 
 def vlookup_update(left, right, left_key, right_key, left_col, right_col):
     mleft = left.loc[:, [left_key, left_col]]
