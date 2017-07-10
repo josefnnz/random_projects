@@ -73,10 +73,10 @@ ycomp.columns = ['yahoo_eeid','emp_preferred_name','email','emp_type','yahoo_job
                  'yahoo_bonus_plan','target_bonus_pct','last_day_of_work','last_hire_date',\
                  'original_hire_date','yahoo_userid']
 
-# load Yahoo active workers
-yactive_filepath, yactive_sheet, yactive_skiprows = setwd+"yahoo_active_workers.xlsx", "Sheet1", 1
-yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheet, skiprows=yactive_skiprows)
-yactive.columns = ['yahoo_eeid','email','yahoo_userid','worker_type','emp_type']
+# # load Yahoo active workers
+# yactive_filepath, yactive_sheet, yactive_skiprows = setwd+"yahoo_active_workers.xlsx", "Sheet1", 1
+# yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheet, skiprows=yactive_skiprows)
+# yactive.columns = ['yahoo_eeid','email','yahoo_userid','worker_type','emp_type']
 
 # load final offboards list from AlixPartners
 offboards = pandas.ExcelFile("/Users/josefnunez/workforce/offboards.xlsx").parse("Sheet1")
@@ -91,12 +91,12 @@ ypromos = pandas.ExcelFile(ypromos_filepath).parse(ypromos_sheet)
 ypromos.columns = ['emp_name', 'eeid', 'company', 'oath_job_code', 'oath_job_profile', 'comment']
 ypromos['oath_job_code'] = ypromos['oath_job_code'].apply('{0:0>6}'.format) # reformat job code for lookup
 
-acomp_filepath, acomp_sheet = setwd+"aol_bonuses.xlsx", "Sheet1"
-acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
-acomp.columns = ['eeid','aol_eeid','emp_name','aol_job_code','is_aol_sales_ee','company',\
-                 'comp_freq','local_currency','sales_incentive_guarantee','sales_incentive_plan_yr',\
-                 'sales_incentive_target_amt_local','sales_incentive_target_amt_usd','target_abp_pct',\
-                 'target_abp_amt_local','target_abp_amt_usd','target_abp_exception_flag','target_abp_plan_yr']
+# acomp_filepath, acomp_sheet = setwd+"aol_bonuses.xlsx", "Sheet1"
+# acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
+# acomp.columns = ['eeid','aol_eeid','emp_name','aol_job_code','is_aol_sales_ee','company',\
+#                  'comp_freq','local_currency','sales_incentive_guarantee','sales_incentive_plan_yr',\
+#                  'sales_incentive_target_amt_local','sales_incentive_target_amt_usd','target_abp_pct',\
+#                  'target_abp_amt_local','target_abp_amt_usd','target_abp_exception_flag','target_abp_plan_yr']
 
 # # load exchange rates
 # fxrates_filepath, fxrates_sheet, fxrates_skiprows = setwd+"fxrates.xlsx", "Currency Rates", 3
@@ -157,18 +157,19 @@ oath.loc[~is_yahoo, 'eeid'] = 'A' + oath['eeid']
 
 # lookup AOL/Yahoo numeric eeids for management chain (CEO -> L10)
 oath['CEO_eeid'] = 'A188900'
-oath['L2_eeid'] = vlookup(oath, oath, 'L2_pseeid', 'aol_eeid', 'eeid')
-L2_L7_pseeid_cols = ['L2_pseeid','L3_pseeid','L4_pseeid','L5_pseeid','L6_pseeid','L7_pseeid']
-L2_L7_eeid_cols = ['L2_eeid','L3_eeid','L4_eeid','L5_eeid','L6_eeid','L7_eeid']
+# oath['L2_eeid'] = vlookup(oath, oath, 'L2_pseeid', 'aol_eeid', 'eeid')
+L2_L7_pseeid_cols = ['mgr_pseeid','L2_pseeid','L3_pseeid','L4_pseeid','L5_pseeid','L6_pseeid','L7_pseeid','L8_name','L9_name','L10_name']
+L2_L7_eeid_cols = ['mgr_eeid','L2_eeid','L3_eeid','L4_eeid','L5_eeid','L6_eeid','L7_eeid','L8_eeid','L9_eeid','L10_eeid']
+L2_L7_lookup_cols = ['aol_eeid']*7 + ['legal_name']*3
 for i in range(len(L2_L7_pseeid_cols)):
-    curr_pseeid, curr_eeid = L2_L7_pseeid_cols[i], L2_L7_eeid_cols[i]
-    oath[curr_eeid] = vlookup(oath, oath, curr_pseeid, 'aol_eeid', 'eeid')     
-L8_L10_name_cols = ['L8_name','L9_name','L10_name']
-L8_L10_eeid_cols = ['L8_eeid','L9_eeid','L10_eeid']
-for i in range(len(L8_L10_name_cols)):
-    curr_name, curr_eeid = L8_L10_name_cols[i], L8_L10_eeid_cols[i]
-    oath[curr_eeid] = vlookup(oath, oath, curr_name, 'legal_name', 'eeid')
-oath['mgr_eeid'] = vlookup(oath, oath, 'mgr_pseeid', 'aol_eeid', 'eeid')
+    curr_pseeid, curr_eeid, curr_lookup_col = L2_L7_pseeid_cols[i], L2_L7_eeid_cols[i], L2_L7_lookup_cols[i]
+    oath[curr_eeid] = vlookup(oath, oath, curr_pseeid, curr_lookup_col, 'eeid')     
+# L8_L10_name_cols = ['L8_name','L9_name','L10_name']
+# L8_L10_eeid_cols = ['L8_eeid','L9_eeid','L10_eeid']
+# for i in range(len(L8_L10_name_cols)):
+#     curr_name, curr_eeid = L8_L10_name_cols[i], L8_L10_eeid_cols[i]
+#     oath[curr_eeid] = vlookup(oath, oath, curr_name, 'legal_name', 'eeid')
+# oath['mgr_eeid'] = vlookup(oath, oath, 'mgr_pseeid', 'aol_eeid', 'eeid')
 
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
@@ -215,21 +216,21 @@ oath['original_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_ee
 oath['userid'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
 # oath['fxrate'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'fx_rate') # for AlixPartners report
 
-# merge AOL comp details
-oath['sales_incentive_guarantee'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_guarantee', 'sales_incentive_guarantee')
-oath['sales_incentive_plan_yr'] = vlookup(oath, acomp, 'eeid', 'eeid', 'sales_incentive_plan_yr')
-oath['sales_incentive_target_amt_local'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_target_amt_local', 'sales_incentive_target_amt_local')
-oath['sales_incentive_target_amt_usd'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_target_amt_usd', 'sales_incentive_target_amt_usd')
-oath['target_abp_pct'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_pct', 'target_abp_pct')
-oath['target_abp_amt_local'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_amt_local', 'target_abp_amt_local')
-oath['target_abp_amt_usd'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_amt_usd', 'target_abp_amt_usd')
-oath['target_abp_exception_flag'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_exception_flag', 'target_abp_exception_flag')
-oath['target_abp_plan_yr'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_plan_yr', 'target_abp_plan_yr')
+# # merge AOL comp details
+# oath['sales_incentive_guarantee'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_guarantee', 'sales_incentive_guarantee')
+# oath['sales_incentive_plan_yr'] = vlookup(oath, acomp, 'eeid', 'eeid', 'sales_incentive_plan_yr')
+# oath['sales_incentive_target_amt_local'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_target_amt_local', 'sales_incentive_target_amt_local')
+# oath['sales_incentive_target_amt_usd'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'sales_incentive_target_amt_usd', 'sales_incentive_target_amt_usd')
+# oath['target_abp_pct'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_pct', 'target_abp_pct')
+# oath['target_abp_amt_local'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_amt_local', 'target_abp_amt_local')
+# oath['target_abp_amt_usd'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_amt_usd', 'target_abp_amt_usd')
+# oath['target_abp_exception_flag'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_exception_flag', 'target_abp_exception_flag')
+# oath['target_abp_plan_yr'] = vlookup_update(oath, acomp, 'eeid', 'eeid', 'target_abp_plan_yr', 'target_abp_plan_yr')
 
-oath.loc[oath['target_abp_pct']>0, 'target_bonus_pct'] = oath['target_abp_pct']
-oath.loc[oath['target_abp_pct']>0, 'bonus_plan'] = 'AOL Bonus Plan'
-oath.loc[oath['sales_incentive_target_amt_local']>0, 'target_bonus_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local']
-oath.loc[oath['sales_incentive_target_amt_local']>0, 'bonus_plan'] = 'AOL Sales Incentive Plan'
+# oath.loc[oath['target_abp_pct']>0, 'target_bonus_pct'] = oath['target_abp_pct']
+# oath.loc[oath['target_abp_pct']>0, 'bonus_plan'] = 'AOL Bonus Plan'
+# oath.loc[oath['sales_incentive_target_amt_local']>0, 'target_bonus_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local']
+# oath.loc[oath['sales_incentive_target_amt_local']>0, 'bonus_plan'] = 'AOL Sales Incentive Plan'
 
 # compute target bonus amount and target TTC
 oath['target_bonus_amt_local'] = oath['base_annualized_local'].astype(float) * oath['target_bonus_pct'].astype(float)
@@ -274,6 +275,18 @@ employees = oath.loc[oath['worker_type']=='Employee']
 
 DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 
+# Current Worker Details columns (includes contingent workers)
+cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+                    'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
+                    'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
+                    'L3_org_name','L4_org_name']
+
+cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
+
+writer_cwd = pandas.ExcelWriter('outputs/test '+DATETIMESTAMP+'.xlsx')
+cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
+writer_cwd.save()
+
 # # Current Worker Details columns (includes contingent workers)
 # cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
 #                     'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
@@ -287,7 +300,7 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 
 # cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
-# writer_cwd = pandas.ExcelWriter('current_worker_details.xlsx')
+# writer_cwd = pandas.ExcelWriter('outputs/Current Worker Details - Non-Sensitive '+DATETIMESTAMP+'.xlsx')
 # cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
 # writer_cwd.save()
 
@@ -324,25 +337,25 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 # cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
 # writer_cwd_sens.save()
 
-alixpartners_cols = ['worker_type','emp_type','eeid','badge_id','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
-                     'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
-                     'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
-                     'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-                     'pay_rate_type','flsa','currency_code','base_annualized_local','base_annualized_usd',\
-                     'target_abp_plan_yr','target_abp_pct','target_abp_amt_local','target_abp_amt_usd',\
-                     'target_abp_exception_flag','sales_incentive_plan_yr','sales_incentive_target_amt_local',\
-                     'sales_incentive_target_amt_usd','sales_incentive_guarantee','yahoo_bonus_plan','yahoo_target_bonus_pct',\
-                     'target_bonus_amt_local','target_bonus_amt_usd',\
-                     'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
-                     'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
-                     'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
-                     'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-                     'L2_org_name','L3_org_name','L4_org_name','last_day_of_work','term_date']
-alixpartners = oath.loc[:, alixpartners_cols]
-alixpartners.columns = ['Worker Type','Employee Type','EEID','Badge ID','Legal Name','Direct Supervisor - EEID','Direct Supervisor - Legal Name','Direct Supervisor - Email','User ID','Last Hire Date','Original Hire Date','Active Status','Full time / Part time','FTE %','Standard Hours','Email','Acquired Company','Job Code','Job Profile','Job Family Group','Job Family','Job Level','Job Category','Management Level','Comp Grade','Comp Grade Profile','Pay Rate Type','FLSA','Local Currency','Base Annualized (Local)','Base Annualized (USD)','Target ABP Plan Year','Target ABP %','Target ABP Amount (Local)','Target ABP Amount (USD)','Target ABP Exception Flag','AOL Sales Incentive Plan Year','AOL Sales Incentive Target Amount (Local)','AOL Sales Incentive Target Amount (USD)','AOL Sales Incentive Guarantee','Yahoo Bonus Plan','Yahoo Target Bonus %','Yahoo Target Bonus Amount (Local)','Yahoo Target Bonus Amount (USD)','TTC Annualized (Local)','TTC Annualized (USD)','WFH Flag','Work Location - Office','Work Location - City','Work Location - State','Work Location - Country','Work Location - Region','CEO EEID','CEO','L2 EEID','L2','L3 EEID','L3','L4 EEID','L4','L5 EEID','L5','L6 EEID','L6','L7 EEID','L7','L8 EEID','L8','L9 EEID','L9','L10 EEID','L10','L2 Org Name','L3 Org Name','l4 Org Name','Last Day of Work','Term Date']
-writer_alixpartners = pandas.ExcelWriter('outputs/Oath Current Employee Details for AlixPartners ' + DATETIMESTAMP + '.xlsx')
-alixpartners.to_excel(writer_alixpartners, 'Sheet1', index=False)
-writer_alixpartners.save()
+# alixpartners_cols = ['worker_type','emp_type','eeid','badge_id','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
+#                      'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
+#                      'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
+#                      'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
+#                      'pay_rate_type','flsa','currency_code','base_annualized_local','base_annualized_usd',\
+#                      'target_abp_plan_yr','target_abp_pct','target_abp_amt_local','target_abp_amt_usd',\
+#                      'target_abp_exception_flag','sales_incentive_plan_yr','sales_incentive_target_amt_local',\
+#                      'sales_incentive_target_amt_usd','sales_incentive_guarantee','yahoo_bonus_plan','yahoo_target_bonus_pct',\
+#                      'target_bonus_amt_local','target_bonus_amt_usd',\
+#                      'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
+#                      'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+#                      'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
+#                      'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
+#                      'L2_org_name','L3_org_name','L4_org_name','last_day_of_work','term_date']
+# alixpartners = oath.loc[:, alixpartners_cols]
+# alixpartners.columns = ['Worker Type','Employee Type','EEID','Badge ID','Legal Name','Direct Supervisor - EEID','Direct Supervisor - Legal Name','Direct Supervisor - Email','User ID','Last Hire Date','Original Hire Date','Active Status','Full time / Part time','FTE %','Standard Hours','Email','Acquired Company','Job Code','Job Profile','Job Family Group','Job Family','Job Level','Job Category','Management Level','Comp Grade','Comp Grade Profile','Pay Rate Type','FLSA','Local Currency','Base Annualized (Local)','Base Annualized (USD)','Target ABP Plan Year','Target ABP %','Target ABP Amount (Local)','Target ABP Amount (USD)','Target ABP Exception Flag','AOL Sales Incentive Plan Year','AOL Sales Incentive Target Amount (Local)','AOL Sales Incentive Target Amount (USD)','AOL Sales Incentive Guarantee','Yahoo Bonus Plan','Yahoo Target Bonus %','Yahoo Target Bonus Amount (Local)','Yahoo Target Bonus Amount (USD)','TTC Annualized (Local)','TTC Annualized (USD)','WFH Flag','Work Location - Office','Work Location - City','Work Location - State','Work Location - Country','Work Location - Region','CEO EEID','CEO','L2 EEID','L2','L3 EEID','L3','L4 EEID','L4','L5 EEID','L5','L6 EEID','L6','L7 EEID','L7','L8 EEID','L8','L9 EEID','L9','L10 EEID','L10','L2 Org Name','L3 Org Name','l4 Org Name','Last Day of Work','Term Date']
+# writer_alixpartners = pandas.ExcelWriter('outputs/Oath Current Employee Details for AlixPartners ' + DATETIMESTAMP + '.xlsx')
+# alixpartners.to_excel(writer_alixpartners, 'Sheet1', index=False)
+# writer_alixpartners.save()
 
 
 # # merge in Oath geo regions
