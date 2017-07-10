@@ -157,19 +157,12 @@ oath.loc[~is_yahoo, 'eeid'] = 'A' + oath['eeid']
 
 # lookup AOL/Yahoo numeric eeids for management chain (CEO -> L10)
 oath['CEO_eeid'] = 'A188900'
-# oath['L2_eeid'] = vlookup(oath, oath, 'L2_pseeid', 'aol_eeid', 'eeid')
 L2_L7_pseeid_cols = ['mgr_pseeid','L2_pseeid','L3_pseeid','L4_pseeid','L5_pseeid','L6_pseeid','L7_pseeid','L8_name','L9_name','L10_name']
 L2_L7_eeid_cols = ['mgr_eeid','L2_eeid','L3_eeid','L4_eeid','L5_eeid','L6_eeid','L7_eeid','L8_eeid','L9_eeid','L10_eeid']
 L2_L7_lookup_cols = ['aol_eeid']*7 + ['legal_name']*3
 for i in range(len(L2_L7_pseeid_cols)):
     curr_pseeid, curr_eeid, curr_lookup_col = L2_L7_pseeid_cols[i], L2_L7_eeid_cols[i], L2_L7_lookup_cols[i]
     oath[curr_eeid] = vlookup(oath, oath, curr_pseeid, curr_lookup_col, 'eeid')     
-# L8_L10_name_cols = ['L8_name','L9_name','L10_name']
-# L8_L10_eeid_cols = ['L8_eeid','L9_eeid','L10_eeid']
-# for i in range(len(L8_L10_name_cols)):
-#     curr_name, curr_eeid = L8_L10_name_cols[i], L8_L10_eeid_cols[i]
-#     oath[curr_eeid] = vlookup(oath, oath, curr_name, 'legal_name', 'eeid')
-# oath['mgr_eeid'] = vlookup(oath, oath, 'mgr_pseeid', 'aol_eeid', 'eeid')
 
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
