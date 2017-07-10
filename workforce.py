@@ -164,7 +164,7 @@ L2_L7_eeid_cols = ['mgr_eeid','L2_eeid','L3_eeid','L4_eeid','L5_eeid','L6_eeid',
 L2_L7_lookup_cols = ['aol_eeid']*7 + ['legal_name']*3
 for i in range(len(L2_L7_pseeid_cols)):
     curr_pseeid, curr_eeid, curr_lookup_col = L2_L7_pseeid_cols[i], L2_L7_eeid_cols[i], L2_L7_lookup_cols[i]
-    oath[curr_eeid] = vlookup(oath, oath, curr_pseeid, curr_lookup_col, 'eeid')     
+    oath = vlookup(oath, oath, curr_pseeid, curr_lookup_col, 'eeid', curr_eeid)     
 
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
@@ -179,7 +179,7 @@ oath['work_office'] = vlookup_update(oath, offices, 'work_office', 'ps_office_na
 oath['wfh_flag'].replace({'No':None, 'Yes':'WFH'}, inplace=True)
 
 # merge in Workday region names
-oath['work_region'] = vlookup(oath, regions, 'work_country', 'country', 'region')
+oath = vlookup(oath, regions, 'work_country', 'country', 'region', 'work_region')
 
 # set active status value for all active workers
 oath['active_status'] = 'Yes'
@@ -189,23 +189,23 @@ oath['job_code'] = vlookup_update(oath, ypromos, 'eeid', 'eeid', 'job_code', 'oa
 
 # merge in Oath job details
 oath['job_profile'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_profile', 'oath_job_profile')
-oath['job_family_group'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_family_group')
+oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_family_group', 'job_family_group')
 oath['job_family'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'job_family', 'oath_job_family')
-oath['job_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_level')
-oath['job_category'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_category')
-oath['mgmt_level'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_mgmt_level')
+oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_level', 'job_level')
+oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_job_category', 'job_category')
+oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_mgmt_level', 'mgmt_level')
 oath['comp_grade'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'comp_grade', 'oath_comp_grade')
-oath['pay_rate_type'] = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type')
+oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type', 'pay_rate_type')
 oath['flsa'] = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
 
 # merge Yahoo comp details
 oath['base_annualized_local'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
 oath['base_annualized_usd'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
 oath['currency_code'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
-oath['bonus_plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan')
-oath['yahoo_bonus_plan'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan') # for AlixPartners report
-oath['target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct')
-oath['yahoo_target_bonus_pct'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct') # for AlixPartners report
+oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan', 'bonus_plan')
+oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan', 'yahoo_bonus_plan') # for AlixPartners report
+oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct', 'target_bonus_pct')
+oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct', 'yahoo_target_bonus_pct') # for AlixPartners report
 oath['last_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'last_hire_date', 'last_hire_date')
 oath['original_hire_date'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'original_hire_date', 'original_hire_date')
 oath['userid'] = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
@@ -246,18 +246,19 @@ oath.loc[(is_employee) & (~is_intern), 'emp_type'] = 'Employee Type - Regular'
 oath['flsa'].replace({'N':'Non-Exempt', 'Nonexempt':'Non-Exempt', 'Y':'Exempt', 'Exempt':'Exempt'}, inplace=True)
 
 # merge in Last Day of Work and Term Date -- NEEDS TO BE DONE AFTER EEID FORMATTED
-oath['last_day_of_work'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_ldw')
-oath['term_date'] = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date')
+oath = vlookup(oath, offboards, 'eeid', 'eeid', 'final_ldw', 'last_day_of_work')
+oath = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date', 'term_date')
 
 # merge in L2-L4 org names
-oath['L2_org_name'] = vlookup(oath, orgnames, 'L2_eeid', 'eeid', 'leader_org_name')
-oath['L3_org_name'] = vlookup(oath, orgnames, 'L3_eeid', 'eeid', 'leader_org_name')
-oath['L4_org_name'] = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name')
+oath = vlookup(oath, orgnames, 'L2_eeid', 'eeid', 'leader_org_name', 'L2_org_name')
+oath = vlookup(oath, orgnames, 'L3_eeid', 'eeid', 'leader_org_name', 'L3_org_name')
+oath = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name', 'L4_org_name')
 
 # Remove duplicate employees -- AOLers with laptops deployed on the Yahoo network
 oath = oath.loc[oath['eeid']!='Y00000 ']
 
 # Create badge_id field for AlixPartners -- NEEDS TO BE DONE AFTER USERID FIELD HAS BEEN CLEANED
+is_yahoo = oath['company'].str.contains("yahoo",case=False)
 oath['badge_id'] = None
 oath.loc[is_yahoo, 'badge_id'] = oath['userid']
 oath.loc[(~is_yahoo), 'badge_id'] = oath['aol_eeid']
