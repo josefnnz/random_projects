@@ -314,6 +314,7 @@ oath['L2_or_L3_org_name'] = oath['L2_org_name']
 oath.loc[oath['L3_org_name'] == 'Facilities', 'L2_or_L3_org_name'] = 'Facilities'
 oath.loc[oath['L3_org_name'] == 'Small Business', 'L2_or_L3_org_name'] = 'Small Business'
 oath.loc[(oath['layer'] == 1) | (oath['layer'] == 2), 'L3_org_name'] = oath['legal_name']
+oath.loc[oath['layer'] == 3, 'L4_org_name'] = oath['legal_name']
 
 # # Remove duplicate employees -- AOLers with laptops deployed on the Yahoo network
 # oath = oath.loc[oath['eeid']!='Y00000 ']
@@ -332,22 +333,22 @@ employees = oath.loc[oath['worker_type']=='Employee']
 
 DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 
-# # Current Worker Details columns (includes contingent workers)
-# cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
-#                     'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
-#                     'ft_or_pt','fte_pct','email','acquired_company','job_code','job_profile',\
-#                     'job_family_group','job_family','job_level','job_category','mgmt_level',\
-#                     'comp_grade_profile','pay_rate_type','work_office','wfh_flag','work_country',\
-#                     'work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
-#                     'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
-#                     'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
-#                     'L3_org_name','L4_org_name','L2_or_L3_org_name']
+# Current Worker Details columns (includes contingent workers)
+cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
+                    'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
+                    'ft_or_pt','fte_pct','email','acquired_company','job_code','job_profile',\
+                    'job_family_group','job_family','job_level','job_category','mgmt_level',\
+                    'comp_grade_profile','pay_rate_type','work_office','wfh_flag','work_country',\
+                    'work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+                    'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
+                    'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
+                    'L3_org_name','L4_org_name','L2_or_L3_org_name']
 
-# cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
+cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
-# writer_cwd = pandas.ExcelWriter('outputs/Oath Current Worker Details - Non-Sensitive '+DATETIMESTAMP+'.xlsx')
-# cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
-# writer_cwd.save()
+writer_cwd = pandas.ExcelWriter('outputs/Oath Current Employee and Contingent Worker Details - Non-Sensitive '+DATETIMESTAMP+'.xlsx')
+cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
+writer_cwd.save()
 
 # # Comp Kitchen Sink columns (includes contingent workers)
 # cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
@@ -378,7 +379,7 @@ cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_le
                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
                  'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work','term_date']
 cwd_sens = oath.loc[:, cwd_sens_cols]
-writer_cwd_sens = pandas.ExcelWriter('outputs/Current Worker Details - Sensitive with Demographic Data ' + DATETIMESTAMP + '.xlsx')
+writer_cwd_sens = pandas.ExcelWriter('outputs/Oath Current Employee and Contingent Worker Details - Highly Sensitive ' + DATETIMESTAMP + '.xlsx')
 cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
 writer_cwd_sens.save()
 
