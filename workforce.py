@@ -94,12 +94,6 @@ ypromos = pandas.ExcelFile(ypromos_filepath).parse(ypromos_sheet)
 ypromos.columns = ['emp_name', 'eeid', 'company', 'oath_job_code', 'oath_job_profile', 'comment']
 ypromos['oath_job_code'] = ypromos['oath_job_code'].apply('{0:0>6}'.format) # reformat job code for lookup
 
-# acomp_filepath, acomp_sheet = setwd+"aol_bonuses.xlsx", "Sheet1"
-# acomp = pandas.ExcelFile(acomp_filepath).parse(acomp_sheet)
-# acomp.columns = ['eeid','aol_eeid','emp_name','aol_job_code','is_aol_sales_ee','company',\
-#                  'comp_freq','local_currency','sales_incentive_guarantee','sales_incentive_plan_yr',\
-#                  'sales_incentive_target_amt_local','sales_incentive_target_amt_usd','target_abp_pct',\
-#                  'target_abp_amt_local','target_abp_amt_usd','target_abp_exception_flag','target_abp_plan_yr']
 abonus_filepath, abonus_sheet = setwd+"aol_bonuses_from_lisa.xlsx", "Sheet1"
 abonus = pandas.ExcelFile(abonus_filepath).parse(abonus_sheet)
 abonus.columns = ['eeid','emp_name','target_bonus_pct','aol_bonus_plan','is_aol_bonus_exception','abp_comment']
