@@ -137,8 +137,8 @@ oath_jobs.drop_duplicates('oath_job_code', inplace=True)
 
 # load city to Oath comp grade profile
 oath_cgps = mappings.parse("CompGradeProfiles")
-oath_cgps.columns = ['country','city_and_state','city','state','oath_georegion']
-oath_cgps.drop_duplicates('city', inplace=True)
+oath_cgps.columns = ['work_office','comp_grade_profile']
+oath_cgps.drop_duplicates('work_office', inplace=True)
 
 # load country to region
 regions = mappings.parse('Regions')
@@ -233,6 +233,9 @@ oath['wfh_flag'].replace({'No':None, 'Yes':'WFH'}, inplace=True)
 # merge in Workday region names and USA states
 oath = vlookup(oath, regions, 'work_country', 'country', 'region', 'work_region')
 oath = vlookup_update(oath, usa_states, 'work_state', 'state_code', 'work_state', 'state_name')
+
+# merge in comp grade profiles -- NEEDS TO BE DONE AFTER WORK OFFICES CLEANUP -- DEPENDENT ON RENAMED OFFICES
+oath = vlookup_update(oath, oath_cgps, 'work_office', 'work_office', 'comp_grade_profile', 'comp_grade_profile')
 
 # set active status value for all active workers
 oath['active_status'] = 'Yes'
