@@ -69,7 +69,7 @@ oath['job_code'] = oath['job_code'].apply('{0:0>6}'.format)	# reformat job code 
 # load Yahoo comp
 ycomp_filepath, ycomp_sheet, ycomp_skiprows = setwd+"yahoo_comp.xlsx", "Sheet1", 2
 ycomp = pandas.ExcelFile(ycomp_filepath).parse(ycomp_sheet, skiprows=ycomp_skiprows)
-ycomp.columns = ['yahoo_eeid','emp_preferred_name','email','emp_type','yahoo_job_code',\
+ycomp.columns = ['eeid','emp_preferred_name','email','emp_type','yahoo_job_code',\
                  'yahoo_job_profile','yahoo_job_family_group','yahoo_job_family','yahoo_job_level',\
                  'yahoo_job_category','yahoo_comp_grade','yahoo_comp_grade_profile','local_currency',\
                  'base_annualized_in_local','base_annualized_in_usd','fx_rate',\
@@ -169,6 +169,20 @@ L2_L7_lookup_cols = ['aol_eeid']*7 + ['legal_name']*3
 for i in range(len(L2_L7_pseeid_cols)):
     curr_pseeid, curr_eeid, curr_lookup_col = L2_L7_pseeid_cols[i], L2_L7_eeid_cols[i], L2_L7_lookup_cols[i]
     oath = vlookup(oath, oath, curr_pseeid, curr_lookup_col, 'eeid', curr_eeid)     
+
+# create layer field (is L1,L2,L3,...)
+L10_L1_eeid_cols = ['L10_eeid','L9_eeid','L8_eeid','L7_eeid','L6_eeid','L5_eeid','L4_eeid','L3_eeid','L2_eeid','CEO_eeid']
+oath['layer'] = 10
+for i in range(len(L10_L1_eeid_cols)):
+    oath.loc[oath[L10_L1_eeid_cols[i]].isnull(), 'layer'] = 10 - i # assign layer number
+oath['layer'] = oath['layer'] - 1
+oath.loc[oath['CEO_name'] == 'Orphan', 'layer'] = None
+
+# create people manager field
+oath['is_ppl_mgr'] = None
+is_ppl_mgr_bool = oath['eeid'].isin(oath['mgr_eeid'])
+oath.loc[is_ppl_mgr_bool, 'is_ppl_mgr'] = 'Yes'
+oath.loc[~is_ppl_mgr_bool, 'is_ppl_mgr'] = 'No'
 
 # change name fields format from "Last, First" to "First Last"
 for x in ['legal_name','mgr_legal_name','CEO_name','L2_name','L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L10_name']:
@@ -283,7 +297,7 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 #                     'ft_or_pt','fte_pct','email','acquired_company','job_code','job_profile',\
 #                     'job_family_group','job_family','job_level','job_category','mgmt_level',\
 #                     'comp_grade_profile','pay_rate_type','work_office','wfh_flag','work_country',\
-#                     'work_region','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+#                     'work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
 #                     'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
 #                     'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
 #                     'L3_org_name','L4_org_name']
@@ -302,7 +316,7 @@ cks_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_n
             'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
             'bonus_plan','is_aol_bonus_exception','abp_comment','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
             'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
-            'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+            'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
             'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
             'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
             'L2_org_name','L3_org_name','L4_org_name']
