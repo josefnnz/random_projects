@@ -49,7 +49,7 @@ oath.columns = ['wf_group','worker_type','yahoo_eeid','yahoo_userid','aol_eeid',
                 'contract_start_date','contract_end_date','contract_provider_id',\
                 'contract_provider','birth_date','original_hire_date','last_hire_date',\
                 'department_entry_date','comp_grade_entry_date','job_entry_date',\
-                'benefit_program','base_annualized_local','currency_code',\
+                'benefit_program','base_annualized_local','local_currency',\
                 'base_annualized_usd','target_abp_plan_yr','target_abp_pct',\
                 'target_abp_exception_flag','target_abp_local','target_abp_usd',\
                 'sales_incentive_plan_yr','sales_begin_date','sales_end_date','sales_incentive_target_amt_local',\
@@ -75,11 +75,6 @@ ycomp.columns = ['eeid','emp_preferred_name','email','emp_type','yahoo_job_code'
                  'base_annualized_in_local','base_annualized_in_usd','fx_rate',\
                  'yahoo_bonus_plan','target_bonus_pct','last_day_of_work','last_hire_date',\
                  'original_hire_date','yahoo_userid']
-
-# # load Yahoo active workers
-# yactive_filepath, yactive_sheet, yactive_skiprows = setwd+"yahoo_active_workers.xlsx", "Sheet1", 1
-# yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheet, skiprows=yactive_skiprows)
-# yactive.columns = ['yahoo_eeid','email','yahoo_userid','worker_type','emp_type']
 
 yactive_filepath, yactive_sheet, yactive_skiprows = setwd+"yahoo_active_workers.xlsx", "Sheet1", 2
 yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheet, skiprows=yactive_skiprows)
@@ -109,6 +104,13 @@ abonus.columns = ['eeid','emp_name','target_bonus_pct','aol_bonus_plan','is_aol_
 # fxrates_filepath, fxrates_sheet, fxrates_skiprows = setwd+"fxrates.xlsx", "Currency Rates", 3
 # fxrates = pandas.ExcelFile(fxrates_filepath).parse(fxrates_sheet, skiprows=fxrates_skiprows)
 # fxrates.columns = ['source_currency','target_currency','fxrate_type','fxrate_timestamp','fxrate']
+
+# load exchange rates
+fxrates_filepath, fxrates_sheet, fxrates_skiprows = setwd+"fxrates.xlsx", "Currency Rates", 3
+fxrates = pandas.ExcelFile(fxrates_filepath).parse(fxrates_sheet, skiprows=fxrates_skiprows)
+fxrates.columns = ['source_currency','target_currency','currency_rate_type',\
+                   'currency_rate_timestamp','currency_rate']
+fxrates.drop_duplicates('source_currency', inplace=True)
 
 ################################################################################
 ##### Load Mappings Tables
@@ -262,13 +264,15 @@ oath = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oat
 # merge Yahoo comp details
 oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'base_annualized_local', 'base_annualized_in_local')
 oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'base_annualized_usd', 'base_annualized_in_usd')
-oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'currency_code', 'local_currency')
+oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'local_currency', 'local_currency')
 oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'yahoo_bonus_plan', 'bonus_plan')
 oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'yahoo_bonus_plan', 'yahoo_bonus_plan') # for AlixPartners report
 oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'target_bonus_pct', 'target_bonus_pct')
 oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'target_bonus_pct', 'yahoo_target_bonus_pct') # for AlixPartners report
 oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'last_hire_date', 'last_hire_date')
 oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'original_hire_date', 'original_hire_date')
+oath = vlookup(oath, fxrates, 'local_currency', 'source_currency','currency_rate','fx_rate')
+oath.loc[oath['local_currency'] == 'USD', 'fx_rate'] = 1.0
 
 # merge AOL bonus details
 oath = vlookup_update(oath, abonus, 'eeid', 'eeid', 'bonus_plan', 'aol_bonus_plan')
@@ -329,18 +333,6 @@ employees = oath.loc[oath['worker_type']=='Employee']
 DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 
 # # Current Worker Details columns (includes contingent workers)
-# cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
-#                     'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
-#                     'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
-#                     'L3_org_name','L4_org_name']
-
-# cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
-
-# writer_cwd = pandas.ExcelWriter('outputs/test '+DATETIMESTAMP+'.xlsx')
-# cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
-# writer_cwd.save()
-
-# # Current Worker Details columns (includes contingent workers)
 # cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_legal_name',\
 #                     'mgr_email','userid','last_hire_date','original_hire_date','active_status',\
 #                     'ft_or_pt','fte_pct','email','acquired_company','job_code','job_profile',\
@@ -353,7 +345,7 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 
 # cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
-# writer_cwd = pandas.ExcelWriter('outputs/Current Worker Details - Non-Sensitive '+DATETIMESTAMP+'.xlsx')
+# writer_cwd = pandas.ExcelWriter('outputs/Oath Current Worker Details - Non-Sensitive '+DATETIMESTAMP+'.xlsx')
 # cwd_nonsens.to_excel(writer_cwd, 'Sheet1', index=False)
 # writer_cwd.save()
 
@@ -362,7 +354,7 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 #             'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
 #             'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
 #             'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-#             'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
+#             'pay_rate_type','flsa','base_annualized_local','fx_rate','local_currency','base_annualized_usd',\
 #             'bonus_plan','is_aol_bonus_exception','abp_comment','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
 #             'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
 #             'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
@@ -378,7 +370,7 @@ cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_le
                  'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
                  'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
                  'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-                 'pay_rate_type','flsa','base_annualized_local','currency_code','base_annualized_usd',\
+                 'pay_rate_type','flsa','base_annualized_local','local_currency','fx_rate','base_annualized_usd',\
                  'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
                  'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
                  'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
@@ -394,7 +386,7 @@ writer_cwd_sens.save()
 #                      'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
 #                      'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
 #                      'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-#                      'pay_rate_type','flsa','currency_code','base_annualized_local','base_annualized_usd',\
+#                      'pay_rate_type','flsa','local_currency','fx_rate','base_annualized_local','base_annualized_usd',\
 #                      'target_abp_plan_yr','target_abp_pct','target_abp_local','target_abp_usd',\
 #                      'target_abp_exception_flag','sales_incentive_plan_yr','sales_incentive_target_amt_local',\
 #                      'sales_incentive_target_amt_usd','sales_incentive_guarantee','yahoo_bonus_plan','yahoo_target_bonus_pct',\
@@ -409,17 +401,3 @@ writer_cwd_sens.save()
 # writer_alixpartners = pandas.ExcelWriter('outputs/Oath Current Employee Details for AlixPartners ' + DATETIMESTAMP + '.xlsx')
 # alixpartners.to_excel(writer_alixpartners, 'Sheet1', index=False)
 # writer_alixpartners.save()
-
-
-# # merge in Oath geo regions
-# oath['work_country'].replace({"Korea, Republic of" : "Republic of Korea"}, inplace=True) # reformat Republic of Korea
-# oath = pandas.merge(oath, georegions[['city','georegion']], how='left', left_on='work_city', right_on='city')
-# oath.loc[~oath['work_country'].str.contains("united states of america",case=False), 'georegion'] = oath['work_country']
-# oath.loc[oath['wfh_flag'].notnull(), 'georegion'] = "WFH"
-
-# oath = pandas.merge(oath, ycomp[['work_email','comp_grade','local_currency','base_annualized_in_local','target_bonus_pct','bonus_plan','fx_rate']], how='left', on='work_email')
-# oath.loc[oath['base_annualized_in_local'].notnull(), 'base_annualized_local'] = oath['base_annualized_in_local'] # put Yahoo base values in main column
-# oath.loc[oath['target_bonus_pct'].notnull(), 'target_abp_pct'] = oath['target_bonus_pct'] # put Yahoo target bonus % in main column
-# oath.loc[oath['local_currency_y'].notnull(), 'local_currency_x'] = oath['local_currency_y'] # put Yahoo local currency in main column
-# oath.loc[(oath['sales_beginning_date'].notnull()) & (oath['sales_incentive_target_amt_local'] > 0), 'target_abp_pct'] = oath['sales_incentive_target_amt_local'] / oath['base_annualized_local'] # compute Sales bonus targets
-
