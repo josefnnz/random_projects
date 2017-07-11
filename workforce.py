@@ -81,6 +81,13 @@ ycomp.columns = ['eeid','emp_preferred_name','email','emp_type','yahoo_job_code'
 # yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheet, skiprows=yactive_skiprows)
 # yactive.columns = ['yahoo_eeid','email','yahoo_userid','worker_type','emp_type']
 
+yactive_filepath, yactive_sheet, yactive_skiprows = setwd+"yahoo_active_workers.xlsx", "Sheet1", 2
+yactive = pandas.ExcelFile(yactive_filepath).parse(yactive_sheet, skiprows=yactive_skiprows)
+yactive.columns = ['worker_type','emp_type','eeid','female_global_flag','poc_usa_flag',\
+                   'acquired_company','mgr_eeid','mgr_preferred_name','mgr_email','mgr_userid',\
+                   'wfh_flag','work_office','work_city','work_state','work_country','work_region',\
+                   'CEO','L2','L3','L4','L5','L6','L7','L8','L9','L2_org_name','L3_org_name','L4_org_name']
+
 # load final offboards list from AlixPartners
 offboards = pandas.ExcelFile("/Users/josefnunez/workforce/offboards.xlsx").parse("Sheet1")
 offboards.columns = ['is_reduction','comment','pending_term_entry','ldw_wd','ldw_wd_ps',\
@@ -211,17 +218,17 @@ oath = vlookup(oath, oath_jobs, 'job_code', 'oath_job_code', 'oath_pay_rate_type
 oath = vlookup_update(oath, oath_jobs, 'job_code', 'oath_job_code', 'flsa', 'oath_is_exempt')
 
 # merge Yahoo comp details
-oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_local', 'base_annualized_in_local')
-oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'base_annualized_usd', 'base_annualized_in_usd')
-oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'currency_code', 'local_currency')
-oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan', 'bonus_plan')
-oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'yahoo_bonus_plan', 'yahoo_bonus_plan') # for AlixPartners report
-oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct', 'target_bonus_pct')
-oath = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'target_bonus_pct', 'yahoo_target_bonus_pct') # for AlixPartners report
-oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'last_hire_date', 'last_hire_date')
-oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'original_hire_date', 'original_hire_date')
-oath = vlookup_update(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'userid', 'yahoo_userid')
-# oath['fxrate'] = vlookup(oath, ycomp, 'yahoo_eeid', 'yahoo_eeid', 'fx_rate') # for AlixPartners report
+oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'base_annualized_local', 'base_annualized_in_local')
+oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'base_annualized_usd', 'base_annualized_in_usd')
+oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'currency_code', 'local_currency')
+oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'yahoo_bonus_plan', 'bonus_plan')
+oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'yahoo_bonus_plan', 'yahoo_bonus_plan') # for AlixPartners report
+oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'target_bonus_pct', 'target_bonus_pct')
+oath = vlookup(oath, ycomp, 'eeid', 'eeid', 'target_bonus_pct', 'yahoo_target_bonus_pct') # for AlixPartners report
+oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'last_hire_date', 'last_hire_date')
+oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'original_hire_date', 'original_hire_date')
+oath = vlookup_update(oath, ycomp, 'eeid', 'eeid', 'userid', 'yahoo_userid')
+# oath['fxrate'] = vlookup(oath, ycomp, 'eeid', 'eeid', 'fx_rate') # for AlixPartners report
 
 # merge AOL bonus details
 oath = vlookup_update(oath, abonus, 'eeid', 'eeid', 'bonus_plan', 'aol_bonus_plan')
