@@ -151,6 +151,11 @@ remap_aol.columns = ['aol_job_code','aol_job_profile','oath_job_code']
 remap_aol.drop_duplicates('aol_job_profile', inplace=True)
 remap_aol['oath_job_code'] = remap_aol['oath_job_code'].apply('{0:0>6}'.format) # reformat job code for lookup
 
+# load USA state names
+usa_states = mappings.parse("States")
+usa_states.columns = ['state_name','state_code']
+usa_states.drop_duplicates('state_code', inplace=True)
+
 ################################################################################
 
 # immediately remove workers marked as not used for headcount reporting
@@ -211,8 +216,9 @@ oath.loc[oath['ft_or_pt'].str.contains("Part-Time",case=False), 'ft_or_pt'] = 'P
 oath = vlookup_update(oath, offices, 'work_office', 'ps_office_name', 'work_office', 'wd_office_name')
 oath['wfh_flag'].replace({'No':None, 'Yes':'WFH'}, inplace=True)
 
-# merge in Workday region names
+# merge in Workday region names and USA states
 oath = vlookup(oath, regions, 'work_country', 'country', 'region', 'work_region')
+oath = vlookup_update(oath, usa_states, 'work_state', 'state_code', 'work_state', 'state_name')
 
 # set active status value for all active workers
 oath['active_status'] = 'Yes'
@@ -279,8 +285,8 @@ oath = vlookup(oath, orgnames, 'L2_eeid', 'eeid', 'leader_org_name', 'L2_org_nam
 oath = vlookup(oath, orgnames, 'L3_eeid', 'eeid', 'leader_org_name', 'L3_org_name')
 oath = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name', 'L4_org_name')
 
-# Remove duplicate employees -- AOLers with laptops deployed on the Yahoo network
-oath = oath.loc[oath['eeid']!='Y00000 ']
+# # Remove duplicate employees -- AOLers with laptops deployed on the Yahoo network
+# oath = oath.loc[oath['eeid']!='Y00000 ']
 
 # Create badge_id field for AlixPartners -- NEEDS TO BE DONE AFTER USERID FIELD HAS BEEN CLEANED
 is_yahoo = oath['company'].str.contains("yahoo",case=False)
