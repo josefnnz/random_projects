@@ -156,6 +156,13 @@ usa_states = mappings.parse("States")
 usa_states.columns = ['state_name','state_code']
 usa_states.drop_duplicates('state_code', inplace=True)
 
+# load manager hierarchies for orphans
+orphan_cleanup = mappings.parse("OrphanCleanup")
+orphan_cleanup.columns = ['eeid','legal_name','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+                          'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
+                          'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name']
+orphan_cleanup.drop_duplicates('eeid', inplace=True)
+
 ################################################################################
 
 # immediately remove workers marked as not used for headcount reporting
@@ -173,14 +180,6 @@ oath['eeid'] = oath['eeid'].apply('{0:0>6}'.format)
 oath.loc[is_yahoo, 'eeid'] = 'Y' + oath['eeid']
 oath.loc[~is_yahoo, 'eeid'] = 'A' + oath['eeid']
 
-# remove terminated Yahoos
-oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'userid', 'yahoo_userid')
-oath['tmp'] = None
-oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'tmp', 'worker_type')
-oath.loc[~is_yahoo, 'tmp'] = 'ACTIVE'
-oath = oath.loc[oath['tmp'].notnull()]
-oath.drop('tmp', axis=1, inplace=True)
-
 # lookup AOL/Yahoo numeric eeids for management chain (CEO -> L10)
 oath['CEO_eeid'] = 'A188900'
 L2_L7_pseeid_cols = ['mgr_pseeid','L2_pseeid','L3_pseeid','L4_pseeid','L5_pseeid','L6_pseeid','L7_pseeid','L8_name','L9_name','L10_name']
@@ -190,6 +189,12 @@ for i in range(len(L2_L7_pseeid_cols)):
     curr_pseeid, curr_eeid, curr_lookup_col = L2_L7_pseeid_cols[i], L2_L7_eeid_cols[i], L2_L7_lookup_cols[i]
     oath = vlookup(oath, oath, curr_pseeid, curr_lookup_col, 'eeid', curr_eeid)     
 
+# clean hierarchy for orphans
+hierarchy_cols = ['CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name',\
+                  'L6_eeid','L6_name','L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name']
+for i in range(len(hierarchy_cols)):
+    oath = vlookup_update(oath, orphan_cleanup, 'eeid', 'eeid', hierarchy_cols[i], hierarchy_cols[i])
+
 # create layer field (is L1,L2,L3,...)
 L10_L1_eeid_cols = ['L10_eeid','L9_eeid','L8_eeid','L7_eeid','L6_eeid','L5_eeid','L4_eeid','L3_eeid','L2_eeid','CEO_eeid']
 oath['layer'] = 10
@@ -197,6 +202,15 @@ for i in range(len(L10_L1_eeid_cols)):
     oath.loc[oath[L10_L1_eeid_cols[i]].isnull(), 'layer'] = 10 - i # assign layer number
 oath['layer'] = oath['layer'] - 1
 oath.loc[oath['CEO_name'] == 'Orphan', 'layer'] = None
+
+# remove terminated Yahoos -- NEED TO DO AFTER ESTABLISHING MANAGER HIERARCHY
+is_yahoo = oath['company'].str.contains("yahoo",case=False)
+oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'userid', 'yahoo_userid')
+oath['tmp'] = None
+oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'tmp', 'worker_type')
+oath.loc[~is_yahoo, 'tmp'] = 'ACTIVE'
+oath = oath.loc[oath['tmp'].notnull()]
+oath.drop('tmp', axis=1, inplace=True)
 
 # create people manager field
 oath['is_ppl_mgr'] = None
@@ -269,9 +283,10 @@ is_employee = oath['wf_group'].str.contains("Employees for WF Report",case=False
 oath.loc[is_employee, 'worker_type'] = 'Employee'
 oath.loc[~is_employee, 'worker_type'] = 'Contingent Worker'
 is_intern = oath['job_category'].str.contains('INT',case=False).fillna(False)
-oath.loc[is_intern, 'emp_type'] = 'Employee Type - Intern'
-oath.loc[(is_employee) & (~is_intern), 'emp_type'] = 'Employee Type - Regular'
-oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'emp_type', 'emp_type')
+oath.loc[is_intern, 'emp_type'] = 'Employee - Intern'
+oath.loc[(is_employee) & (~is_intern), 'emp_type'] = 'Employee - Regular'
+oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'emp_type', 'emp_type') # overwrite with actual Workday values for Yahoos
+oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'worker_type', 'worker_type') # overwrite with actual Workday values for Yahoos
 
 # reformat FLSA field
 oath['flsa'].replace({'N':'Non-Exempt', 'Nonexempt':'Non-Exempt', 'Y':'Exempt', 'Exempt':'Exempt'}, inplace=True)
@@ -280,10 +295,15 @@ oath['flsa'].replace({'N':'Non-Exempt', 'Nonexempt':'Non-Exempt', 'Y':'Exempt', 
 oath = vlookup(oath, offboards, 'eeid', 'eeid', 'final_ldw', 'last_day_of_work')
 oath = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date', 'term_date')
 
-# merge in L2-L4 org names
+# merge in L2-L4 org names and L2/L3 org name grouping for workforce report
 oath = vlookup(oath, orgnames, 'L2_eeid', 'eeid', 'leader_org_name', 'L2_org_name')
 oath = vlookup(oath, orgnames, 'L3_eeid', 'eeid', 'leader_org_name', 'L3_org_name')
 oath = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name', 'L4_org_name')
+oath.loc[oath['eeid'] == 'A188900', 'L2_org_name'] = 'CEO Office'
+oath['L2_or_L3_org_name'] = oath['L2_org_name']
+oath.loc[oath['L3_org_name'] == 'Facilities', 'L2_or_L3_org_name'] = 'Facilities'
+oath.loc[oath['L3_org_name'] == 'Small Business', 'L2_or_L3_org_name'] = 'Small Business'
+oath.loc[(oath['layer'] == 1) | (oath['layer'] == 2), 'L3_org_name'] = oath['legal_name']
 
 # # Remove duplicate employees -- AOLers with laptops deployed on the Yahoo network
 # oath = oath.loc[oath['eeid']!='Y00000 ']
@@ -323,7 +343,7 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 #                     'work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
 #                     'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
 #                     'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
-#                     'L3_org_name','L4_org_name']
+#                     'L3_org_name','L4_org_name','L2_or_L3_org_name']
 
 # cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
@@ -342,7 +362,7 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 #             'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
 #             'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
 #             'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-#             'L2_org_name','L3_org_name','L4_org_name']
+#             'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name']
 # cks = employees.loc[:, cks_cols]
 # writer = pandas.ExcelWriter('outputs/Oath Comp Kitchen Sink '+DATETIMESTAMP+'.xlsx')
 # cks.to_excel(writer,'Sheet1', index=False)
@@ -358,7 +378,7 @@ cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr_le
                  'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
                  'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-                 'L2_org_name','L3_org_name','L4_org_name','last_day_of_work','term_date']
+                 'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work','term_date']
 cwd_sens = oath.loc[:, cwd_sens_cols]
 writer_cwd_sens = pandas.ExcelWriter('outputs/Current Worker Details - Sensitive with Demographic Data ' + DATETIMESTAMP + '.xlsx')
 cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
@@ -377,7 +397,7 @@ writer_cwd_sens.save()
 #                      'work_state','work_country','work_region','CEO_eeid','CEO_name','L2_eeid','L2_name',\
 #                      'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
 #                      'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-#                      'L2_org_name','L3_org_name','L4_org_name','last_day_of_work','term_date']
+#                      'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work','term_date']
 # alixpartners = oath.loc[:, alixpartners_cols]
 # alixpartners.columns = ['Worker Type','Employee Type','EEID','Badge ID','Legal Name','Direct Supervisor - EEID','Direct Supervisor - Legal Name','Direct Supervisor - Email','User ID','Last Hire Date','Original Hire Date','Active Status','Full time / Part time','FTE %','Standard Hours','Email','Acquired Company','Job Code','Job Profile','Job Family Group','Job Family','Job Level','Job Category','Management Level','Comp Grade','Comp Grade Profile','Pay Rate Type','FLSA','Local Currency','Base Annualized (Local)','Base Annualized (USD)','Target ABP Plan Year','Target ABP %','Target ABP Amount (Local)','Target ABP Amount (USD)','Target ABP Exception Flag','AOL Sales Incentive Plan Year','AOL Sales Incentive Target Amount (Local)','AOL Sales Incentive Target Amount (USD)','AOL Sales Incentive Guarantee','Yahoo Bonus Plan','Yahoo Target Bonus %','Yahoo Target Bonus Amount (Local)','Yahoo Target Bonus Amount (USD)','TTC Annualized (Local)','TTC Annualized (USD)','WFH Flag','Work Location - Office','Work Location - City','Work Location - State','Work Location - Country','Work Location - Region','CEO EEID','CEO','L2 EEID','L2','L3 EEID','L3','L4 EEID','L4','L5 EEID','L5','L6 EEID','L6','L7 EEID','L7','L8 EEID','L8','L9 EEID','L9','L10 EEID','L10','L2 Org Name','L3 Org Name','l4 Org Name','Last Day of Work','Term Date']
 # writer_alixpartners = pandas.ExcelWriter('outputs/Oath Current Employee Details for AlixPartners ' + DATETIMESTAMP + '.xlsx')
