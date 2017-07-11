@@ -233,6 +233,8 @@ oath['wfh_flag'].replace({'No':None, 'Yes':'WFH'}, inplace=True)
 # merge in Workday region names and USA states
 oath = vlookup(oath, regions, 'work_country', 'country', 'region', 'work_region')
 oath = vlookup_update(oath, usa_states, 'work_state', 'state_code', 'work_state', 'state_name')
+oath.loc[oath['work_office'] == 'UK - VDMS Offsite Contractors', 'work_country'] = 'United Kingdom'
+oath.loc[oath['work_office'] == 'UK - VDMS Offsite Contractors', 'work_region'] = 'EMEA'
 
 # merge in comp grade profiles -- NEEDS TO BE DONE AFTER WORK OFFICES CLEANUP -- DEPENDENT ON RENAMED OFFICES
 oath = vlookup_update(oath, oath_cgps, 'work_office', 'work_office', 'comp_grade_profile', 'comp_grade_profile')
@@ -275,6 +277,7 @@ oath = vlookup(oath, abonus, 'eeid', 'eeid', 'is_aol_bonus_exception', 'is_aol_b
 oath = vlookup(oath, abonus, 'eeid', 'eeid', 'abp_comment', 'abp_comment')
 
 # compute target bonus amount and target TTC
+oath['target_bonus_pct'].fillna(0, inplace=True) # fill missing bonus targets
 oath['target_bonus_amt_local'] = oath['base_annualized_local'].astype(float) * oath['target_bonus_pct'].astype(float)
 oath['target_bonus_amt_usd'] = oath['base_annualized_usd'].astype(float) * oath['target_bonus_pct'].astype(float)
 oath['ttc_annualized_local'] = oath['base_annualized_local'].astype(float) + oath['target_bonus_amt_local'].astype(float)
