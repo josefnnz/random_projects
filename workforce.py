@@ -343,7 +343,7 @@ cwd_nonsens_cols = ['worker_type','emp_type','eeid','legal_name','mgr_eeid','mgr
                     'work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
                     'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
                     'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name','L2_org_name',\
-                    'L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work']
+                    'L3_org_name','L4_org_name','L2_or_L3_org_name']
 
 cwd_nonsens = oath.loc[:, cwd_nonsens_cols]
 
