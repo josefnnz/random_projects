@@ -301,9 +301,11 @@ oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'worker_type', 'worker_type
 # reformat FLSA field
 oath['flsa'].replace({'N':'Non-Exempt', 'Nonexempt':'Non-Exempt', 'Y':'Exempt', 'Exempt':'Exempt'}, inplace=True)
 
-# merge in Last Day of Work and Term Date -- NEEDS TO BE DONE AFTER EEID FORMATTED
+# merge in Last Day of Work and Term Date and create transition flag -- NEEDS TO BE DONE AFTER EEID FORMATTED
 oath = vlookup(oath, offboards, 'eeid', 'eeid', 'final_ldw', 'last_day_of_work')
 oath = vlookup(oath, offboards, 'eeid', 'eeid', 'final_term_date', 'term_date')
+oath['transition_flag'] = None
+oath.loc[oath['last_day_of_work'].notnull(), 'transition_flag'] = 'Y'
 
 # merge in L2-L4 org names and L2/L3 org name grouping for workforce report
 oath = vlookup(oath, orgnames, 'L2_eeid', 'eeid', 'leader_org_name', 'L2_org_name')
@@ -312,7 +314,8 @@ oath = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name', 'L4_org_nam
 oath.loc[oath['eeid'] == 'A188900', 'L2_org_name'] = 'CEO Office'
 oath['L2_or_L3_org_name'] = oath['L2_org_name']
 oath.loc[oath['L3_org_name'] == 'Facilities', 'L2_or_L3_org_name'] = 'Facilities'
-oath.loc[oath['L3_org_name'].str.contain('Small Business',case=False), 'L2_or_L3_org_name'] = 'Small Business'
+oath.loc[oath['L3_org_name'] == 'Small Business', 'L2_or_L3_org_name'] = 'Small Business'
+oath.loc[oath['L3_org_name'] == 'Small Business Engineering', 'L2_or_L3_org_name'] = 'Small Business'
 oath.loc[(oath['layer'] == 1) | (oath['layer'] == 2), 'L3_org_name'] = oath['legal_name']
 oath.loc[oath['layer'] == 3, 'L4_org_name'] = oath['legal_name']
 oath.loc[oath['L4_org_name'].isnull(), 'L4_org_name'] = oath['L4_name']
@@ -336,6 +339,7 @@ poc_remap = {'Asian (Not Hispanic or Latino)':'POC',\
              'White':None,\
              'I Choose Not To Identify':None}
 oath = vlookup_update(oath, yactive, 'eeid', 'eeid', 'ethnicity', 'poc_usa_flag')
+oath.loc[oath['work_country'] == 'United States of America', 'ethnicity'] = None # remove non-US POCs
 oath['ethnicity'].replace(poc_remap, inplace=True)
 
 female_remap = {'Female':'Female',\
@@ -396,21 +400,21 @@ DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
 # cks.to_excel(writer,'Sheet1', index=False)
 # writer.save()
 
-cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','gender','ethnicity','mgr_eeid','mgr_legal_name','mgr_email',\
-                 'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
-                 'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
-                 'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-                 'pay_rate_type','flsa','base_annualized_local','local_currency','fx_rate','base_annualized_usd',\
-                 'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
-                 'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
-                 'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
-                 'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
-                 'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-                 'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work','term_date']
-cwd_sens = oath.loc[:, cwd_sens_cols]
-writer_cwd_sens = pandas.ExcelWriter('outputs/Oath Current Employee and Contingent Worker Details - Highly Sensitive ' + DATETIMESTAMP + '.xlsx')
-cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
-writer_cwd_sens.save()
+# cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','gender','ethnicity','mgr_eeid','mgr_legal_name','mgr_email',\
+#                  'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
+#                  'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
+#                  'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
+#                  'pay_rate_type','flsa','base_annualized_local','local_currency','fx_rate','base_annualized_usd',\
+#                  'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
+#                  'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
+#                  'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+#                  'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
+#                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
+#                  'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work','term_date']
+# cwd_sens = oath.loc[:, cwd_sens_cols]
+# writer_cwd_sens = pandas.ExcelWriter('outputs/Oath Current Employee and Contingent Worker Details - Highly Sensitive ' + DATETIMESTAMP + '.xlsx')
+# cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
+# writer_cwd_sens.save()
 
 # alixpartners_cols = ['worker_type','emp_type','eeid','badge_id','legal_name','mgr_eeid','mgr_legal_name','mgr_email',\
 #                      'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
@@ -431,3 +435,36 @@ writer_cwd_sens.save()
 # writer_alixpartners = pandas.ExcelWriter('outputs/Oath Current Employee Details for AlixPartners ' + DATETIMESTAMP + '.xlsx')
 # alixpartners.to_excel(writer_alixpartners, 'Sheet1', index=False)
 # writer_alixpartners.save()
+
+workforce_rpt_cols = ['worker_type','emp_type','gender','ethnicity','wfh_flag','work_office',\
+                      'work_city','work_state','work_country','work_region','CEO_eeid','L2_eeid',\
+                      'L3_eeid','L4_eeid','CEO_name','L2_name','L3_name','L4_name','L2_org_name',\
+                      'L3_org_name','L4_org_name','L2_or_L3_org_name','transition_flag']
+active_ee_tab = oath.loc[(oath['worker_type'] == 'Employee') & (oath['emp_type'] != 'Employee - Intern'), workforce_rpt_cols]
+active_cw_tab = oath.loc[oath['worker_type'] == 'Contingent Worker', workforce_rpt_cols]
+writer_workforce_rpt = pandas.ExcelWriter('outputs/Oath Workforce Report Tabs ' + DATETIMESTAMP + '.xlsx')
+active_ee_tab.to_excel(writer_workforce_rpt, 'active_ee', index=False)
+active_cw_tab.to_excel(writer_workforce_rpt, 'active_cw', index=False)
+writer_workforce_rpt.save()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
