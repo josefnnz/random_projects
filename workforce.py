@@ -312,7 +312,7 @@ oath = vlookup(oath, orgnames, 'L4_eeid', 'eeid', 'leader_org_name', 'L4_org_nam
 oath.loc[oath['eeid'] == 'A188900', 'L2_org_name'] = 'CEO Office'
 oath['L2_or_L3_org_name'] = oath['L2_org_name']
 oath.loc[oath['L3_org_name'] == 'Facilities', 'L2_or_L3_org_name'] = 'Facilities'
-oath.loc[oath['L3_org_name'] == 'Small Business', 'L2_or_L3_org_name'] = 'Small Business'
+oath.loc[oath['L3_org_name'].str.contain('Small Business',case=False), 'L2_or_L3_org_name'] = 'Small Business'
 oath.loc[(oath['layer'] == 1) | (oath['layer'] == 2), 'L3_org_name'] = oath['legal_name']
 oath.loc[oath['layer'] == 3, 'L4_org_name'] = oath['legal_name']
 oath.loc[oath['L4_org_name'].isnull(), 'L4_org_name'] = oath['L4_name']
