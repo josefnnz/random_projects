@@ -66,9 +66,14 @@ wd_action.columns = ['worker_type','emp_type','eeid','emp_preferred_name','hire_
                      'hire_or_term_effective_date','term_type','email','userid','acquired_company',\
                      'mgr_eeid','mgr_preferred_name','mgr_email','mgr_userid','job_code','job_profile',\
                      'job_family_group','job_family','job_category','job_level','mgmt_level','wfh_flag',\
-                     'work_office','work_city','work_state','work_country','work_region','CEO','L2',\
-                     'L3','L4','L5','L6','L7','L8','L9','L2_org_name','L3_org_name','L4_org_name']
+                     'work_office','work_city','work_state','work_country','work_region','CEO_name','L2_name',\
+                     'L3_name','L4_name','L5_name','L6_name','L7_name','L8_name','L9_name','L2_org_name','L3_org_name','L4_org_name']
+wd_action['CEO_eeid'] = None; wd_action['L2_eeid'] = None; wd_action['L3_eeid'] = None; wd_action['L4_eeid'] = None;
+wd_action['L5_eeid'] = None; wd_action['L6_eeid'] = None; wd_action['L7_eeid'] = None; wd_action['L8_eeid'] = None; 
+wd_action['L9_eeid'] = None; wd_action['L10_eeid'] = None;
 
+################################################################################
+################################################################################
 ################################################################################
 ##### Load Mappings Tables
 
@@ -105,6 +110,15 @@ name_to_eeid = mappings.parse('LegalNameToEEID')
 name_to_eeid.colunmns = ['eeid','legal_name']
 name_to_eeid.drop_duplicates('eeid', inplace=True)
 
+# load manager hierarchies for orphans
+orphan_cleanup = mappings.parse("OrphanCleanup")
+orphan_cleanup.columns = ['eeid','legal_name','CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name',\
+                          'L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name','L7_eeid','L7_name',\
+                          'L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name']
+orphan_cleanup.drop_duplicates('eeid', inplace=True)
+
+################################################################################
+################################################################################
 ################################################################################
 ##### Reformat PeopleSoft Data
 
@@ -193,7 +207,8 @@ ps_action['L2_L3_lookup_val'] = ps_action['L2_org_name'] + '-' + ps_action['L3_o
 
 ps_action = ps_action.sort_values(by='eeid', ascending=True)
 
-
+################################################################################
+################################################################################
 ################################################################################
 ##### Reformat Workday data
 
@@ -202,10 +217,20 @@ wd_action['company'] = 'Yahoo'
 
 # merge in CEO/L2/L3 eeids
 wd_action['CEO_eeid'] = 'A188900'
-wd_action = vlookup(wd_action, L2_name_to_eeid, 'L2', 'WD_L2_name', 'L2_eeid', 'L2_eeid')
+wd_action = vlookup_update(wd_action, L2_name_to_eeid, 'L2_name', 'WD_L2_name', 'L2_eeid', 'L2_eeid')
 
 # merge in L2 eeids and then merge in L2 org name using L2 eeid
 wd_action = vlookup_update(wd_action, orgnames, 'L2_eeid', 'eeid', 'L2_org_name', 'leader_org_name')
+
+
+hierarchy_cols = ['CEO_eeid','CEO_name','L2_eeid','L2_name','L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name',\
+                  'L6_eeid','L6_name','L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name']
+for i in range(len(hierarchy_cols)):
+    wd_action = vlookup_update(wd_action, orphan_cleanup, 'eeid', 'eeid', hierarchy_cols[i], hierarchy_cols[i])
+wd_action = vlookup_update(wd_action, orgnames, 'L3_eeid', 'eeid', 'L3_org_name', 'leader_org_name')
+
+wd_action['L2_or_L3_org_name'] = wd_action['L2_org_name']
+wd_action['L2_L3_lookup_val'] = wd_action['L2_org_name'] + '-' + wd_action['L3_org_name']
 
 
 DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
@@ -218,4 +243,13 @@ aol_actions = ps_action.loc[:, aol_actions_cols]
 writer_aol_actions = pandas.ExcelWriter('outputs/hires_terms_tab '+DATETIMESTAMP+'.xlsx')
 aol_actions.to_excel(writer_aol_actions, 'Sheet1', index=False)
 writer_aol_actions.save()
+
+yahoo_actions_cols = ['acquired_company','eeid','hire_or_term_effective_date','hire_or_term','term_type','CEO_eeid','L2_eeid','L3_eeid',\
+                      'CEO_name','L2_name','L3_name','L2_org_name','L3_org_name','L2_or_L3_org_name','L2_L3_lookup_val']
+yahoo_actions = wd_action.loc[:, yahoo_actions_cols]
+writer_yahoo_actions = pandas.ExcelWriter('outputs/hires_terms_yahoo_tab '+DATETIMESTAMP+'.xlsx')
+yahoo_actions.to_excel(writer_yahoo_actions, 'Sheet1', index=False)
+writer_yahoo_actions.save()
+
+
 
