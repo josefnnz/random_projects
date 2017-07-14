@@ -129,6 +129,9 @@ ps_action['worker_type'].replace({'CWR':'Contingent Worker',\
 	                              inplace=True)
 ps_action = ps_action.loc[ps_action['worker_type'] == 'Employee']
 
+# filter out interns
+psaction = ps_action.loc[ps_action['job_family'] != 'Intern']
+
 # create acquired company field (AOL/Yahoo) and merge AOL/Yahoo numeric eeids into one column
 is_yahoo = ps_action['company'].str.contains("yahoo",case=False)
 ps_action.loc[is_yahoo, 'acquired_company'] = 'Yahoo'
@@ -211,6 +214,9 @@ ps_action = ps_action.sort_values(by='eeid', ascending=True)
 ################################################################################
 ################################################################################
 ##### Reformat Workday data
+
+# remove interns
+wd_action = wd_action.loc[wd_action['emp_type'] != 'Employee - Intern']
 
 # flag as Yahoo hires/terms
 wd_action['company'] = 'Yahoo'
