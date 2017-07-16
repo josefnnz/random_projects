@@ -1,117 +1,153 @@
-function ad_hoc_memo_generation() 
+function create_request_one_time_payment_eib() 
 {
+  /**
+   * Abbreviations used (case-insensitive):
+   *    eib -- Enterprise Interface Builder
+   *    cidx -- Column Index (column in array)
+   *    cont -- Continuation
+   *    cpy - Copy
+   *    det -- Details
+   *    dt -- Date
+   *    ee -- Employee(s)
+   *    flr -- Folder
+   *    idx -- Index
+   *    pmt -- Payment(s)
+   *    req -- Request
+   *    sal -- Salary
+   *    shn -- Sheet Name
+   *    ss -- Spreadsheet
+   *    ssid -- Google Spreadsheet ID
+   *    tml -- Template
+   *    trans -- Transition
+   *    val -- Value(s)
+   **/
 
-  // google file ids
-  var RIF_SPREADSHEET_ID = "1oHZbpp-YNX3CiSmW2tLuJFRvoddr3p5P-cv10E40ToE"; // file: Master List - All L3s
-  var RIF_SHEET_NAME = "MAKE_NEW_MEMOS_HERE";
-  var MEMO_FOLDER_ID = "0B2QuBirnXYjxZ0N0WElaRnFsM0k"; // folder: Project Oath - Notification Memos
-  var MEMO_TERMINATION_TEMPLATE_ID = "1bJNSA2BV3kg2StbYssYSBCLj93GefwufEb2MWpOeCig";
-  var MEMO_TRANSITION_TEMPLATE_ID = "1hrqXWsuXDsGSc0g3RvdVO2ViF3MXMh6rMrExa5r_ihs";
+  // EIB reference ids
+  var TRANS_BONUS_PMT_CODE = "OTP_Trans_Bonus"; // Transition Bonus Pmt Plan ID
+  var SAL_CONT_PMT_CODE = "OTP_Sal_Continuation"; // Salary Continuation Pmt Plan ID
+  var USD_CURRENCY_ID = "USD"; // Currency ID for US Dollars
 
-  // set memo folder where all l3 folder will be created
-  var folder_destination = DriveApp.getFolderById(MEMO_FOLDER_ID);
+  // Google file ids
+  var MAIN_FOLDER_ID = "0B2QuBirnXYjxSW9sN2ltWDc2dVk"; // Folder: redwood_salary_continuation
+  var PMT_DET_SSID = "1kL9SwTA887XgsvQPMia1OoY_-oWFAYKLPg52ugdambY"; // File: CIC Payroll - US Regular Employees
+  var PMT_DET_SHN = "pay_continuation_details"; // Sheet with eeid, transition bonus amt, pmt amts, pay dates, etc.
+  var EIB_TML_REQ_ONE_TIME_PMT_SSID = "1zr7OsgYBXRbA9DKwxR3hAdeF4ToY23VMKPtv1ZDrvNA"; // File: Request_One-Time_Payment - GSheet
+  var EIB_TML_REQ_ONE_TIME_PMT_SHN = "Request One Time Payment"; // Sheet to input pay details
 
-  // load sheet with employees with termination or transition from RIF spreadsheet
-  var sheet_rifs = SpreadsheetApp.openById(RIF_SPREADSHEET_ID).getSheetByName(RIF_SHEET_NAME);
-  // var range_last_row_index = sheet_rifs.getLastRow();
-  // var range_last_col_index = sheet_rifs.getLastColumn();
+  // Set folder where EIB will be created (also holds payment details ss and eib template)
+  var folder = DriveApp.getFolderById(MAIN_FOLDER_ID);
+
+  // Load sheet with impacted employees -- may or may not include ees non-eligible for salary continuation
+  var ees = SpreadsheetApp.openById(PMT_DET_SSID).getSheetByName(PMT_DET_SHN);
+
+  // Identify specific first and last rows to extract
+  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 3, 1, 1); //NEEDTOUPDATE
+  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 3, 1, 1); //NEEDTOUPDATE
+
+  // Identify total number of rows and columns to extract
+  var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
+  var NUM_COLS_TO_EXTRACT = 59; // Columns A to BG -- NEEDTOUPDATE
     
-  // identify rows to extract
-  var FIRST_ROW_EXTRACTED = 1 * sheet_rifs.getSheetValues(1, 3, 1, 1);
-  var LAST_ROW_EXTRACTED = 1 * sheet_rifs.getSheetValues(2, 3, 1, 1);
-  var NUM_ROWS_EXTRACTED = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-    
-  // extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
-  var values_employees = sheet_rifs.getRange(FIRST_ROW_EXTRACTED, 26, NUM_ROWS_EXTRACTED, 11).getValues();
-  var NUM_EMPLOYEES = values_employees.length;
+  // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
+  var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_EXTRACTED, 59).getValues();
+  var NUM_EES = values_ees.length;
 
-  // field array indices
-  var IS_ON_TRANSITION_COL_INDEX = 0;
-  var TRANSITION_BONUS_AMOUNT_COL_INDEX = 1;
-  var LAST_DAY_OF_WORK_COL_INDEX = 2;
-  var FIRST_NAME_COL_INDEX = 3;
-  var LAST_NAME_COL_INDEX = 4;
-  var USER_ID_COL_INDEX = 5;
-  var L2_NAME_COL_INDEX = 6;
-  var L3_NAME_COL_INDEX = 7;
-  var OFFICE_COL_INDEX = 8;
-  var COUNTRY_COL_INDEX = 9;
-  var EMPLOYEE_TYPE_COL_INDEX = 10;
+  // Array column indices for required fields
+  // NOTE: Array column indices do not match location on ss. SS increments indices by 1.
+  //       Issue because SS indices begin at 1. But Array column indices begin at 0.
+  var EEID_CIDX = 0; //NEEDTOUPDATE
+  var TRANS_FLAG_CIDX = 0; //NEEDTOUPDATE
+  var TRANS_BONUS_AMT_CIDX = 0; //NEEDTOUPDATE
+  var PMT_AMT_CIDX = 0; //NEEDTOUPDATE
+  var NUM_PMTS_CIDX = 0; //NEEDTOUPDATE
+  var FIRST_PAY_DATE_CIDX = 0; //NEEDTOUPDATE
+  var LAST_PAY_DATE_CIDX = 0; //NEEDTOUPDATE
 
-  // mail merge status column index in sheet
-  var NOTES_COL_INDEX = 37;
-    
-  function mail_merge() 
+  function create_full_eib()
   {
-    // values array starts indexing at [0][0]
-    for (var row = 0; row < NUM_EMPLOYEES; row++) 
+    // Create filename -- append current datetime in format yyyy-MM-dd HH_MM PDT
+    var today = new Date();
+    today = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate() + " " + today.getHours() + "_" + today.Minutes() + " PDT";
+    var filename = "Request_One-Time_Payment - " + today;
+
+    // Make copy of EIB template in folder and open the new copy
+    var file_tml_cpy = DriveApp.getFileById(EIB_TML_REQ_ONE_TIME_PMT_SSID).makeCopy(filename, folder);
+    var ss_new_eib = SpreadsheetApp.openById(file_tml_cpy.getID());
+
+    // // save memo as pdf in drive root directory. delete memo as google doc
+    // var pdf_version = folder_destination.createFile(file_new_memo.getAs("application/pdf"));
+    // pdf_version.setName(filename);
+    // file_new_memo.setTrashed(true);
+    
+    // sheet_rifs.getRange(FIRST_ROW_EXTRACTED+row, NOTES_COL_INDEX).setValue("memo created. id: " + pdf_version.getId());
+
+  }
+  
+  function create_pmts_array() 
+  {
+    // Create empty 2D array to hold payments
+    var pmts = [["", "sskey", "eeid", "", "effdate", "", "", "pmtcode", "amt", "", "currency", "", ""]];
+    var sskey = 1; // Initiate a spreadsheet key value for EIB
+    for (var row = 0; row < NUM_EES; row++) 
     {
-      // extract current employee
-      var curr = values_employees[row];
-      
-      // skip (1) non-US, (2) L2/L3s, (3) FTC employees
-      // only generate memos for US L4+ employees
-      var country = curr[COUNTRY_COL_INDEX];
-      var l2_name = curr[L2_NAME_COL_INDEX];
-      var l3_name = curr[L3_NAME_COL_INDEX];
-      var employee_type = curr[EMPLOYEE_TYPE_COL_INDEX];
-      if (country != "United States of America" || l2_name === "" || l3_name === "" || employee_type === "Employee - Fixed Term Contract") 
+      // Extract current employee
+      var curr = values_ees[row];
+
+      // Extract required fields
+      var eeid = curr[EEID_CIDX];
+      var trans_flag = curr[TRANS_FLAG_CIDX];
+      var trans_bonus_amt = curr[TRANS_BONUS_AMT_CIDX];
+      var pmt_amt = curr[PMT_AMT_CIDX];
+      var num_pmts = curr[NUM_PMTS_CIDX];
+      var first_pay_date = curr[FIRST_PAY_DATE_CIDX];
+
+      if (trans_flag === "Y")
       {
-        Logger.log(FIRST_ROW_EXTRACTED+row);
-        sheet_rifs.getRange(FIRST_ROW_EXTRACTED+row, NOTES_COL_INDEX).setValue("we are not generating memos for non-US employees NOR L2s NOR L3s NOR Fixed Term Contract employees");
-        continue;
+        // Add transition bonus payment if applicable -- transition bonus paid on first continued pay date
+        pmts.append(create_eib_row(sskey, eeid, first_pay_date, TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
+        sskey++; // Increment spreadsheet key
       }
-      
-      // extract required fields
-      var is_on_transition = curr[IS_ON_TRANSITION_COL_INDEX];
-      var transition_bonus_amount = curr[TRANSITION_BONUS_AMOUNT_COL_INDEX];
-      var last_day_of_work = Utilities.formatDate(curr[LAST_DAY_OF_WORK_COL_INDEX], Session.getScriptTimeZone(), "MMMMM d, yyyy");
-      var first_name = curr[FIRST_NAME_COL_INDEX];
-      var last_name = curr[LAST_NAME_COL_INDEX];
-      var user_id = curr[USER_ID_COL_INDEX];
-      var office = curr[OFFICE_COL_INDEX];
-      var employee_type = curr[EMPLOYEE_TYPE_COL_INDEX];
-      
-      // make file. do not make file if file already exists
-      var filename = office + "_" + l2_name + "_" + l3_name + "_" + first_name + " " + last_name + " (" + user_id + ")";
-      var subfiles = folder_destination.getFilesByName(filename);
-      if (subfiles.hasNext())
+
+      // Add salary continuation payments for allotted number of payments
+      for (var i = FIRST_PAY_DATE_CIDX; i <= LAST_PAY_DATE_CIDX; i++)
       {
-        sheet_rifs.getRange(FIRST_ROW_EXTRACTED+row, NOTES_COL_INDEX).setValue("memo already exists. id: " + subfiles.next().getId());
-      }
-      else
-      {
-        // copy memo template. select template based on transition/termination type
-        var doc_template_id = (is_on_transition) ? MEMO_TRANSITION_TEMPLATE_ID : MEMO_TERMINATION_TEMPLATE_ID;
-        var file_new_memo = DriveApp.getFileById(doc_template_id).makeCopy(filename, folder_destination);
-      
-        // create new memo doc
-        var doc_new_memo = DocumentApp.openById(file_new_memo.getId());
-        var body = doc_new_memo.getBody();
-        
-        body.replaceText("<<first_name>>", first_name);
-        body.replaceText("<<last_name>>", last_name);
-        body.replaceText("<<last_day_of_work>>", last_day_of_work);
-        if (is_on_transition) { body.replaceText("<<transition_bonus_amount>>", transition_bonus_amount) }      
-        
-        doc_new_memo.saveAndClose();
-      
-        // save memo as pdf in drive root directory. delete memo as google doc
-        var pdf_version = folder_destination.createFile(file_new_memo.getAs("application/pdf"));
-        pdf_version.setName(filename);
-        file_new_memo.setTrashed(true);
-        
-        sheet_rifs.getRange(FIRST_ROW_EXTRACTED+row, NOTES_COL_INDEX).setValue("memo created. id: " + pdf_version.getId());
-      }
+        pay_date = curr[i];
+        if (pay_date)
+        {
+          break; // Break loop if pay date is NULL -- already covered all required payments
+        }
+        pmts.append(create_eib_row(sskey, eeid, pay_date, SAL_CONT_PMT_CODE, pmt_amt, USD_CURRENCY_ID));
+        sskey++; // Increment spreadsheet key
+      }    
     }
+    return pmts;
   }
    
+  /**
+   * Fill-in EIB payment row with required fields
+   *
+   * @param sskey -- Spreadsheet Key
+   * @param eeid -- Employee ID in 6 digit text format (i.e. has leading zeros)
+   * @param effdate -- Effective Date of payment
+   * @param pmtcode -- Workday One-Time_Payment_Plan_ID value. Separate codes for continuation vs. transition bonus payments
+   * @param amt -- Payment amount
+   * @param currency -- Payment currency
+   *
+   * @return formatted array to fill EIB payment row with given details
+   **/
+  function create_eib_row(sskey, eeid, effdate, pmtcode, amt, currency)
+  {
+    // All EIB columns: 
+    // Fields, Spreadsheet Key, Employee position, Effective Date, Employee Visibility Date, Reason, 
+    // One Time Payment Plan, Amount, Percent, Currency, Comment, Do Not Pay
+    return ["", sskey, eeid, "", effdate, "", "", pmtcode, amt, "", currency, "", ""];
+  }
     
   //var prompt_text = "Are the first and last row employee names correct? If not, please fix the values in cells C1 and C2. \n\n"
   //                  + "";
   //var ui = SpreadsheetApp.getUi();
   //var result = ui.prompt(prompt_text, ui.ButtonSet.YES_NO_CANCEL);
     
-  mail_merge();
+  Logger.log(create_pmts_array());
   
 }
