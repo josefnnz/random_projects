@@ -93,7 +93,7 @@ function create_request_one_time_payment_eib()
       var curr = values_ees[row];
 
       // Extract required fields
-      var eeid = curr[EEID_CIDX];
+      var eeid = add_leading_zeros(new String(curr[EEID_CIDX]), 6); // ensure EEID is 6 digits long
       var trans_flag = curr[TRANS_FLAG_CIDX];
       var trans_bonus_amt = curr[TRANS_BONUS_AMT_CIDX];
       var pmt_amt = curr[PMT_AMT_CIDX];
@@ -103,7 +103,7 @@ function create_request_one_time_payment_eib()
       if (trans_flag === "Y")
       {
         // Add transition bonus payment if applicable -- transition bonus paid on first continued pay date
-        pmts.push(create_eib_row(sskey, eeid, first_pay_date, TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
+        pmts.push(create_eib_row(new String(sskey), eeid, first_pay_date, TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
         sskey++; // Increment spreadsheet key
       }
 
@@ -116,7 +116,7 @@ function create_request_one_time_payment_eib()
           break; // Break loop if pay date is NULL -- already covered all required payments
         }
         pay_date = Utilities.formatDate(pay_date, Session.getScriptTimeZone(), "yyyy-MM-dd");
-        pmts.push(create_eib_row(sskey, eeid, pay_date, SAL_CONT_PMT_CODE, pmt_amt, USD_CURRENCY_ID));
+        pmts.push(create_eib_row(new String(sskey), eeid, pay_date, SAL_CONT_PMT_CODE, pmt_amt, USD_CURRENCY_ID));
         sskey++; // Increment spreadsheet key
       }    
     }
@@ -141,6 +141,19 @@ function create_request_one_time_payment_eib()
     // Fields, Spreadsheet Key, Employee position, Effective Date, Employee Visibility Date, Reason, 
     // One Time Payment Plan, Amount, Percent, Currency, Comment, Do Not Pay
     return ["", sskey, eeid, "", effdate, "", "", pmtcode, amt, "", currency, "", ""];
+  }
+
+  /**
+   * Add necessary leading zeros to make number given number of digits long
+   *
+   * @param str_num -- number cast as a string
+   * @param digits -- desired length of number formatted string
+   *
+   * @return number as string with desired number of digits
+   **/
+  function add_leading_zeros(str_num, digits)
+  {
+    return str_num.length < digits ? add_leading_zeros("0" + str_num, digits) : str_num;
   }
     
   //var prompt_text = "Are the first and last row employee names correct? If not, please fix the values in cells C1 and C2. \n\n"
