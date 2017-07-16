@@ -49,7 +49,7 @@ function create_request_one_time_payment_eib()
   var NUM_COLS_TO_EXTRACT = 59; // Columns A to BG -- NEEDTOUPDATE
     
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
-  var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_EXTRACTED, 59).getValues();
+  var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
   var NUM_EES = values_ees.length;
 
   // Array column indices for required fields
