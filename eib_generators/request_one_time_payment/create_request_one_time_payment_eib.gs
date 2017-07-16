@@ -66,9 +66,8 @@ function create_request_one_time_payment_eib()
   function create_full_eib()
   {
     // Create filename -- append current datetime in format yyyy-MM-dd HH_MM PDT
-    var today = new Date();
-    today = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate() + " " + today.getHours() + "_" + today.Minutes() + " PDT";
-    var filename = "Request_One-Time_Payment - " + today;
+    var datetimestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH_mm");
+    var filename = "Request_One-Time_Payment - " + datetimestamp;
 
     // Make copy of EIB template in folder and open the new copy
     var file_tml_cpy = DriveApp.getFileById(EIB_TML_REQ_ONE_TIME_PMT_SSID).makeCopy(filename, folder);
