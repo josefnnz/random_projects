@@ -85,7 +85,7 @@ function create_request_one_time_payment_eib()
   function create_pmts_array() 
   {
     // Create empty 2D array to hold payments
-    var pmts = [["", "sskey", "eeid", "", "effdate", "", "", "pmtcode", "amt", "", "currency", "", ""]];
+    var pmts = [];
     var sskey = 1; // Initiate a spreadsheet key value for EIB
     for (var row = 0; row < NUM_EES; row++) 
     {
