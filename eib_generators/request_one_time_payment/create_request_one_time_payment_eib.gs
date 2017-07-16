@@ -65,13 +65,19 @@ function create_request_one_time_payment_eib()
 
   function create_full_eib()
   {
+    // Create array of payments to fill-in EIB
+    var pmts = create_pmts_array();
+    var NUM_ROWS_TO_WRITE = pmts.length;
+    var NUM_COLS_TO_WRITE = pmts[0].length;
+
     // Create filename -- append current datetime in format yyyy-MM-dd HH_MM PDT
-    var datetimestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH_mm");
+    var datetimestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH_mm") + " PDT";
     var filename = "Request_One-Time_Payment - " + datetimestamp;
 
-    // Make copy of EIB template in folder and open the new copy
+    // Make copy of EIB template in folder, open copy, write new values
     var file_tml_cpy = DriveApp.getFileById(EIB_TML_REQ_ONE_TIME_PMT_SSID).makeCopy(filename, folder);
-    var ss_new_eib = SpreadsheetApp.openById(file_tml_cpy.getID());
+    var sheet_new_eib = SpreadsheetApp.openById(file_tml_cpy.getId()).getSheetByName(EIB_TML_REQ_ONE_TIME_PMT_SHN);
+    sheet_new_eib.getRange(6, 1, NUM_ROWS_TO_WRITE, NUM_COLS_TO_WRITE).setValues(pmts);
 
     // // save memo as pdf in drive root directory. delete memo as google doc
     // var pdf_version = folder_destination.createFile(file_new_memo.getAs("application/pdf"));
@@ -161,6 +167,5 @@ function create_request_one_time_payment_eib()
   //var ui = SpreadsheetApp.getUi();
   //var result = ui.prompt(prompt_text, ui.ButtonSet.YES_NO_CANCEL);
     
-  Logger.log(create_pmts_array());
-  
+  create_full_eib();
 }
