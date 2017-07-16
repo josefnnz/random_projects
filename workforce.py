@@ -433,7 +433,7 @@ alixpartners_cols = ['worker_type','emp_type','eeid','badge_id','legal_name','mg
                      'std_hrs','email','acquired_company','contract_type','contractor_type',\
                      'contract_number','contract_status','msp_or_nonmsp',\
                      'contract_start_date','contract_end_date','contract_provider_id',\
-                     'contract_provider''job_code','job_profile','job_family_group',\
+                     'contract_provider','job_code','job_profile','job_family_group',\
                      'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
                      'pay_rate_type','flsa','local_currency','fx_rate','base_annualized_local','base_annualized_usd',\
                      'target_abp_plan_yr','target_abp_pct','target_abp_local','target_abp_usd',\

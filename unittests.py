@@ -35,6 +35,12 @@ class TestStringMethods(unittest.TestCase):
 		self.df1 = None
 		self.df2 = None
 
+	def test_replace_text_1(self):
+		self.assertEqual('Non-Exempt', 'Nonexempt'.replace("N|Nonexempt", "Non-Exempt"))
+		self.assertEqual('Non-Exempt', 'N'.replace("N|Nonexempt", "Non-Exempt"))
+		self.assertEqual('Exempt', 'Exempt'.replace("Y|Exempt", "Exempt"))
+		self.assertEqual('Exempt', 'Y'.replace("Y|Exempt", "Exempt"))
+
 	def test_vlookup_update_1(self):
 		actual = self.df4.copy()
 		actual['b'] = vlookup_update(self.df4, self.df1, 'a', 'a', 'b', 'b')
