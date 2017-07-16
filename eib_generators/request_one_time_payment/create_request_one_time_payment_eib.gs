@@ -112,7 +112,7 @@ function create_request_one_time_payment_eib()
       for (var i = FIRST_PAY_DATE_CIDX; i <= LAST_PAY_DATE_CIDX; i++)
       {
         pay_date = curr[i];
-        if (pay_date)
+        if (!pay_date)
         {
           break; // Break loop if pay date is NULL -- already covered all required payments
         }
