@@ -74,18 +74,23 @@ function create_request_one_time_payment_eib()
     var datetimestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH_mm") + " PDT";
     var filename = "Request_One-Time_Payment - " + datetimestamp;
 
-    // Make copy of EIB template in folder, open copy, write new values
+    // Make copy of EIB template in folder, open copy, and write new values
     var file_tml_cpy = DriveApp.getFileById(EIB_TML_REQ_ONE_TIME_PMT_SSID).makeCopy(filename, folder);
     var sheet_new_eib = SpreadsheetApp.openById(file_tml_cpy.getId()).getSheetByName(EIB_TML_REQ_ONE_TIME_PMT_SHN);
     sheet_new_eib.getRange(6, 1, NUM_ROWS_TO_WRITE, NUM_COLS_TO_WRITE).setValues(pmts);
+    SpreadsheetApp.flush()
 
-    // // save memo as pdf in drive root directory. delete memo as google doc
-    // var pdf_version = folder_destination.createFile(file_new_memo.getAs("application/pdf"));
-    // pdf_version.setName(filename);
-    // file_new_memo.setTrashed(true);
-    
-    // sheet_rifs.getRange(FIRST_ROW_EXTRACTED+row, NOTES_COL_INDEX).setValue("memo created. id: " + pdf_version.getId());
-
+    // Save new EIB as Excel file, and delete GSheet version
+    var url = "https://docs.google.com/feeds/download/spreadsheets/Export?key=" + file_tml_cpy.getId() + "&exportFormat=xlsx";
+    var params = {
+      method : "get",
+      headers : {"Authorization": "Bearer " + ScriptApp.getOAuthToken()},
+      muteHttpExceptions : true
+    };
+    var blob = UrlFetchApp.fetch(url, params).getBlob();
+    blob.setName(filename + ".xlsx");
+    folder.createFile(blob);
+    file_tml_cpy.setTrashed(true);   
   }
   
   function create_pmts_array() 
