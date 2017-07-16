@@ -114,7 +114,7 @@ function create_request_one_time_payment_eib()
       if (trans_flag === "Y")
       {
         // Add transition bonus payment if applicable -- transition bonus paid on first continued pay date
-        pmts.push(create_eib_row(new String(sskey), eeid, first_pay_date, TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
+        pmts.push(create_eib_row(new String(sskey), eeid, Utilities.formatDate(first_pay_date, Session.getScriptTimeZone(), "yyyy-MM-dd"), TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
         sskey++; // Increment spreadsheet key
       }
 
