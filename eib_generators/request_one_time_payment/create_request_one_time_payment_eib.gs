@@ -115,6 +115,7 @@ function create_request_one_time_payment_eib()
         {
           break; // Break loop if pay date is NULL -- already covered all required payments
         }
+        pay_date = Utilities.formatDate(pay_date, Session.getScriptTimeZone(), "yyyy-MM-dd");
         pmts.push(create_eib_row(sskey, eeid, pay_date, SAL_CONT_PMT_CODE, pmt_amt, USD_CURRENCY_ID));
         sskey++; // Increment spreadsheet key
       }    
