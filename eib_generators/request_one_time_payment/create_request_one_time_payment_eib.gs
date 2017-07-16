@@ -46,7 +46,7 @@ function create_request_one_time_payment_eib()
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 59; // Columns A to BG -- NEEDTOUPDATE
+  var NUM_COLS_TO_EXTRACT = 60; // Columns A to BG -- NEEDTOUPDATE
     
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
@@ -55,13 +55,13 @@ function create_request_one_time_payment_eib()
   // Array column indices for required fields
   // NOTE: Array column indices do not match location on ss. SS increments indices by 1.
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
-  var EEID_CIDX = 0; //NEEDTOUPDATE
-  var TRANS_FLAG_CIDX = 0; //NEEDTOUPDATE
-  var TRANS_BONUS_AMT_CIDX = 0; //NEEDTOUPDATE
-  var PMT_AMT_CIDX = 0; //NEEDTOUPDATE
-  var NUM_PMTS_CIDX = 0; //NEEDTOUPDATE
-  var FIRST_PAY_DATE_CIDX = 0; //NEEDTOUPDATE
-  var LAST_PAY_DATE_CIDX = 0; //NEEDTOUPDATE
+  var EEID_CIDX = 1 - 1; //NEEDTOUPDATE
+  var TRANS_FLAG_CIDX = 2 - 1; //NEEDTOUPDATE
+  var TRANS_BONUS_AMT_CIDX = 3 - 1; //NEEDTOUPDATE
+  var PMT_AMT_CIDX = 16 - 1; //NEEDTOUPDATE
+  var NUM_PMTS_CIDX = 12 - 1; //NEEDTOUPDATE
+  var FIRST_PAY_DATE_CIDX = 17 - 1; //NEEDTOUPDATE
+  var LAST_PAY_DATE_CIDX = 60 - 1; //NEEDTOUPDATE
 
   function create_full_eib()
   {
@@ -104,7 +104,7 @@ function create_request_one_time_payment_eib()
       if (trans_flag === "Y")
       {
         // Add transition bonus payment if applicable -- transition bonus paid on first continued pay date
-        pmts.append(create_eib_row(sskey, eeid, first_pay_date, TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
+        pmts.push(create_eib_row(sskey, eeid, first_pay_date, TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
         sskey++; // Increment spreadsheet key
       }
 
@@ -116,7 +116,7 @@ function create_request_one_time_payment_eib()
         {
           break; // Break loop if pay date is NULL -- already covered all required payments
         }
-        pmts.append(create_eib_row(sskey, eeid, pay_date, SAL_CONT_PMT_CODE, pmt_amt, USD_CURRENCY_ID));
+        pmts.push(create_eib_row(sskey, eeid, pay_date, SAL_CONT_PMT_CODE, pmt_amt, USD_CURRENCY_ID));
         sskey++; // Increment spreadsheet key
       }    
     }
