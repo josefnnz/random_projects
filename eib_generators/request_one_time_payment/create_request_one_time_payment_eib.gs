@@ -22,6 +22,13 @@ function create_request_one_time_payment_eib()
    *    val -- Value(s)
    **/
 
+   // Confirm user wants to run script
+   var ui = SpreadsheetApp.getUi();
+   var response = ui.alert("Please check cells A3 and B3 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
+   if (response !== ui.Button.OK) {
+    return;
+   }
+
   // EIB reference ids
   var TRANS_BONUS_PMT_CODE = "OTP_Trans_Bonus"; // Transition Bonus Pmt Plan ID
   var SAL_CONT_PMT_CODE = "OTP_Sal_Continuation"; // Salary Continuation Pmt Plan ID
