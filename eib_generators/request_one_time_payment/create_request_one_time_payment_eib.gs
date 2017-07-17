@@ -48,8 +48,8 @@ function create_request_one_time_payment_eib()
   var ees = SpreadsheetApp.openById(PMT_DET_SSID).getSheetByName(PMT_DET_SHN);
 
   // Identify specific first and last rows to extract
-  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 3, 1, 1); //NEEDTOUPDATE
-  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 3, 1, 1); //NEEDTOUPDATE
+  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 2, 1, 1); //NEEDTOUPDATE
+  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 2, 1, 1); //NEEDTOUPDATE
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
@@ -96,8 +96,12 @@ function create_request_one_time_payment_eib()
     };
     var blob = UrlFetchApp.fetch(url, params).getBlob();
     blob.setName(filename + ".xlsx");
-    folder.createFile(blob);
+    var excel_new_eib = folder.createFile(blob);
     file_tml_cpy.setTrashed(true);   
+
+    // Write unique URL for new EIB file in spreadsheet for easy reference
+    ees.getRange(4, 4, 1, 1).setValue(datetimestamp);
+    ees.getRange(5, 4, 1, 1).setValue("https://drive.google.com/file/d/"+excel_new_eib.getId()+"/view");
   }
   
   function create_pmts_array() 
