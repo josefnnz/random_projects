@@ -24,14 +24,14 @@ function create_request_one_time_payment_eib()
 
    // Confirm user wants to run script
    var ui = SpreadsheetApp.getUi();
-   var response = ui.alert("Please check cells A3 and B3 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
+   var response = ui.alert("Please check cells C1 and C2 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
    if (response !== ui.Button.OK) {
     return;
    }
 
   // EIB reference ids
-  var TRANS_BONUS_PMT_CODE = "OTP_Trans_Bonus"; // Transition Bonus Pmt Plan ID
-  var SAL_CONT_PMT_CODE = "OTP_Sal_Continuation"; // Salary Continuation Pmt Plan ID
+  var TRANS_BONUS_PMT_CODE = "OTP_TransBonus"; // Transition Bonus Pmt Plan ID
+  var SAL_CONT_PMT_CODE = "OTP_SalContinuation"; // Salary Continuation Pmt Plan ID
   var USD_CURRENCY_ID = "USD"; // Currency ID for US Dollars
 
   // Google file ids
@@ -62,13 +62,13 @@ function create_request_one_time_payment_eib()
   // Array column indices for required fields
   // NOTE: Array column indices do not match location on ss. SS increments indices by 1.
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
-  var EEID_CIDX = 1 - 1; //NEEDTOUPDATE
-  var TRANS_FLAG_CIDX = 4 - 1; //NEEDTOUPDATE
-  var TRANS_BONUS_AMT_CIDX = 5 - 1; //NEEDTOUPDATE
-  var PMT_AMT_CIDX = 12 - 1; //NEEDTOUPDATE
-  var NUM_PMTS_CIDX = 9 - 1; //NEEDTOUPDATE
+  var EEID_CIDX = 2 - 1; //NEEDTOUPDATE
+  var TRANS_FLAG_CIDX = 5 - 1; //NEEDTOUPDATE
+  var TRANS_BONUS_AMT_CIDX = 6 - 1; //NEEDTOUPDATE
+  var PMT_AMT_CIDX = 13 - 1; //NEEDTOUPDATE
+  var NUM_PMTS_CIDX = 10 - 1; //NEEDTOUPDATE
   var FIRST_PAY_DATE_CIDX = 16 - 1; //NEEDTOUPDATE
-  var LAST_PAY_DATE_CIDX = 58 - 1; //NEEDTOUPDATE
+  var LAST_PAY_DATE_CIDX = 59 - 1; //NEEDTOUPDATE
 
   function create_full_eib()
   {
