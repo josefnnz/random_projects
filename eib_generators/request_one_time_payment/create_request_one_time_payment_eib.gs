@@ -48,12 +48,12 @@ function create_request_one_time_payment_eib()
   var ees = SpreadsheetApp.openById(PMT_DET_SSID).getSheetByName(PMT_DET_SHN);
 
   // Identify specific first and last rows to extract
-  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 2, 1, 1); //NEEDTOUPDATE
-  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 2, 1, 1); //NEEDTOUPDATE
+  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 3, 1, 1); //NEEDTOUPDATE
+  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 3, 1, 1); //NEEDTOUPDATE
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 60; // Columns A to BG -- NEEDTOUPDATE
+  var NUM_COLS_TO_EXTRACT = 59; // Columns A to BG -- NEEDTOUPDATE
     
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
@@ -63,12 +63,12 @@ function create_request_one_time_payment_eib()
   // NOTE: Array column indices do not match location on ss. SS increments indices by 1.
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
   var EEID_CIDX = 1 - 1; //NEEDTOUPDATE
-  var TRANS_FLAG_CIDX = 2 - 1; //NEEDTOUPDATE
-  var TRANS_BONUS_AMT_CIDX = 3 - 1; //NEEDTOUPDATE
-  var PMT_AMT_CIDX = 16 - 1; //NEEDTOUPDATE
-  var NUM_PMTS_CIDX = 12 - 1; //NEEDTOUPDATE
-  var FIRST_PAY_DATE_CIDX = 17 - 1; //NEEDTOUPDATE
-  var LAST_PAY_DATE_CIDX = 60 - 1; //NEEDTOUPDATE
+  var TRANS_FLAG_CIDX = 4 - 1; //NEEDTOUPDATE
+  var TRANS_BONUS_AMT_CIDX = 5 - 1; //NEEDTOUPDATE
+  var PMT_AMT_CIDX = 12 - 1; //NEEDTOUPDATE
+  var NUM_PMTS_CIDX = 9 - 1; //NEEDTOUPDATE
+  var FIRST_PAY_DATE_CIDX = 16 - 1; //NEEDTOUPDATE
+  var LAST_PAY_DATE_CIDX = 58 - 1; //NEEDTOUPDATE
 
   function create_full_eib()
   {
@@ -100,8 +100,8 @@ function create_request_one_time_payment_eib()
     file_tml_cpy.setTrashed(true);   
 
     // Write unique URL for new EIB file in spreadsheet for easy reference
-    ees.getRange(4, 4, 1, 1).setValue(datetimestamp);
-    ees.getRange(5, 4, 1, 1).setValue("https://drive.google.com/file/d/"+excel_new_eib.getId()+"/view");
+    ees.getRange(4, 5, 1, 1).setValue(datetimestamp);
+    ees.getRange(5, 5, 1, 1).setValue("https://drive.google.com/file/d/"+excel_new_eib.getId()+"/view");
   }
   
   function create_pmts_array() 
