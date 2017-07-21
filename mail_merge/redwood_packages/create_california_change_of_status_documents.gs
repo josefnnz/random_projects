@@ -62,6 +62,7 @@ function create_california_change_of_status_documents()
   var SEPARATION_DATE_CIDX = 12 - 1; //NEEDTOUPDATE
   var USA_STATE_CIDX = 28 - 1; //NEEDTOUPDATE
   var SOCIAL_SECURITY_NUMBER_CIDX = 29 - 1; //NEEDTOUPDATE
+  var OATH_L2_CIDX = 30 - 1; //NEEDTOUPDATE
 
   function mail_merge() 
   {
@@ -71,16 +72,18 @@ function create_california_change_of_status_documents()
       var curr = values_ees[row];
 
       // Only continue for California employees
-      if (curr[USA_STATE_CIDX] === "California") 
+      var usa_state = curr[USA_STATE_CIDX];
+      if (usa_state === "California") 
       {
         // Extract required fields
         var notification_date = Utilities.formatDate(curr[NOTIFICATION_DATE_CIDX], Session.getScriptTimeZone(), "MMMMM d, yyyy");
         var full_legal_name = curr[LEGAL_FIRST_NAME_CIDX] + " " + curr[LEGAL_LAST_NAME_CIDX];
         var social_security_number = curr[SOCIAL_SECURITY_NUMBER_CIDX];
         var separation_date = Utilities.formatDate(curr[SEPARATION_DATE_CIDX], Session.getScriptTimeZone(), "MMMMM d, yyyy");
+        var oath_L2 = curr[OATH_L2_CIDX];
 
         // Copy the template
-        var filename = full_legal_name;
+        var filename = usa_state + " - " + oath_L2 + " - " + full_legal_name;
         var file_new_ee_doc = DriveApp.getFileById(CA_STATUS_CHANGE_TEMPLATE_ID).makeCopy(filename, folder);
       
         // Fill-in copy with employee details
