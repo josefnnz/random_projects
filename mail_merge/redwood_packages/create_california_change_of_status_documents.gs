@@ -87,7 +87,7 @@ function create_california_change_of_status_documents()
         var adea_flag = (curr[ADEA_FLAG_CIDX]) ? "Over40" : "Under40";
 
         // Copy the template
-        var filename = "CCOS_" + adea_flag + "_" + oath_L2 + "_" + usa_state + "_" + full_legal_name + " (" + eeid + ")";
+        var filename = "CCOS - " + adea_flag + " - " + oath_L2 + " - " + usa_state + " - " + full_legal_name + " (" + eeid + ")";
         var file_new_ee_doc = DriveApp.getFileById(CA_STATUS_CHANGE_TEMPLATE_ID).makeCopy(filename, folder);
       
         // Fill-in copy with employee details
