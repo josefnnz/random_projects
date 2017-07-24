@@ -56,13 +56,15 @@ function create_california_change_of_status_documents()
   // Array column indices for required fields
   // NOTE: Array column indices do not match location on ss. SS increments indices by 1.
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
+  var EEID_CIDX = 1 - 1;
   var LEGAL_FIRST_NAME_CIDX = 3 - 1; //NEEDTOUPDATE
   var LEGAL_LAST_NAME_CIDX = 4 - 1; //NEEDTOUPDATE
-  var NOTIFICATION_DATE_CIDX = 8 - 1; //NEEDTOUPDATE
-  var SEPARATION_DATE_CIDX = 12 - 1; //NEEDTOUPDATE
-  var USA_STATE_CIDX = 28 - 1; //NEEDTOUPDATE
-  var SOCIAL_SECURITY_NUMBER_CIDX = 29 - 1; //NEEDTOUPDATE
-  var OATH_L2_CIDX = 30 - 1; //NEEDTOUPDATE
+  var NOTIFICATION_DATE_CIDX = 5 - 1; //NEEDTOUPDATE
+  var SEPARATION_DATE_CIDX = 7 - 1; //NEEDTOUPDATE
+  var OATH_L2_CIDX = 15 - 1; //NEEDTOUPDATE
+  var USA_STATE_ISO_CODE_CIDX = 20 - 1; //NEEDTOUPDATE
+  var SOCIAL_SECURITY_NUMBER_CIDX = 25 - 1; //NEEDTOUPDATE
+  var ADEA_FLAG_CIDX = 26 - 1; //NEEDTOUPDATE
 
   function mail_merge() 
   {
@@ -72,18 +74,20 @@ function create_california_change_of_status_documents()
       var curr = values_ees[row];
 
       // Only continue for California employees
-      var usa_state = curr[USA_STATE_CIDX];
-      if (usa_state === "California") 
+      var usa_state = curr[USA_STATE_ISO_CODE_CIDX];
+      if (usa_state === "CA") 
       {
         // Extract required fields
-        var notification_date = Utilities.formatDate(curr[NOTIFICATION_DATE_CIDX], Session.getScriptTimeZone(), "MMMMM d, yyyy");
+        var eeid = curr[EEID_CIDX];
         var full_legal_name = curr[LEGAL_FIRST_NAME_CIDX] + " " + curr[LEGAL_LAST_NAME_CIDX];
-        var social_security_number = curr[SOCIAL_SECURITY_NUMBER_CIDX];
+        var notification_date = Utilities.formatDate(curr[NOTIFICATION_DATE_CIDX], Session.getScriptTimeZone(), "MMMMM d, yyyy");
         var separation_date = Utilities.formatDate(curr[SEPARATION_DATE_CIDX], Session.getScriptTimeZone(), "MMMMM d, yyyy");
         var oath_L2 = curr[OATH_L2_CIDX];
+        var social_security_number = curr[SOCIAL_SECURITY_NUMBER_CIDX];
+        var adea_flag = (curr[ADEA_FLAG_CIDX]) ? "Over40" : "Under40";
 
         // Copy the template
-        var filename = usa_state + " - " + oath_L2 + " - " + full_legal_name;
+        var filename = "CCOS_" + adea_flag + "_" + oath_L2 + "_" + usa_state + "_" + full_legal_name + " (" + eeid + ")";
         var file_new_ee_doc = DriveApp.getFileById(CA_STATUS_CHANGE_TEMPLATE_ID).makeCopy(filename, folder);
       
         // Fill-in copy with employee details
