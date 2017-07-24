@@ -107,7 +107,7 @@ function create_term_notices()
         var adea_flag = (curr[ADEA_FLAG_CIDX]) ? "Over40" : "Under40";
 
         // Copy the template
-        var filename = "CCOS_" + adea_flag + "_" + oath_L2 + "_" + usa_state + "_" + full_legal_name + " (" + eeid + ")";
+        var filename = "TNRC - " + adea_flag + " - " + oath_L2 + " - " + usa_state + " - " + full_legal_name + " (" + eeid + ")";
         var TERM_NOTICE_TEMPLATE_ID = (is_ee_with_transition) ? TERM_NOTICE_TRANSITION_TEMPLATE_ID : TERM_NOTICE_NON_TRANSITION_TEMPLATE_ID;
         var file_new_ee_doc = DriveApp.getFileById(TERM_NOTICE_TEMPLATE_ID).makeCopy(filename, folder);
       
