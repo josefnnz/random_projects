@@ -50,6 +50,7 @@ function create_adea_forms()
 
   // Load sheet with notice range dates
   var values_notice_ranges = ees.getSheetByName(NOTICE_RANGES_SHN).getRange(2, 1, 13, 5).getValues();
+  // var values_notice_ranges = ees.getSheetByName(NOTICE_RANGES_SHN).getRange(12, 1, 1, 5).getValues();
   var NUM_OATH_L2S = values_notice_ranges.length;
 
   // Array column indices for required fields
@@ -126,10 +127,10 @@ function create_adea_forms()
       tr.appendTableCell("Not Selected").getChild(0).asParagraph().setAttributes(headerStyle);
       tr.appendTableCell("Selected").getChild(0).asParagraph().setAttributes(headerStyle);
       
-      tbl.setColumnWidth(0, 165);
-      tbl.setColumnWidth(1, 110);
-      tbl.setColumnWidth(2, 185)
-      tbl.setColumnWidth(3, 70);
+      tbl.setColumnWidth(0, 310);
+      tbl.setColumnWidth(1, 50);
+      tbl.setColumnWidth(2, 50)
+      tbl.setColumnWidth(3, 50);
 
       tbl.setAttributes({"HORIZONTAL_ALIGNMENT" : "CENTER"});
 
