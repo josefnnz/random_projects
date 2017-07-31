@@ -128,10 +128,10 @@ function create_adea_forms()
 
       var tbl = body.appendTable();
       var tr = tbl.appendTableRow();
-      tr.appendTableCell("Current Job Title").getChild(0).asParagraph().setAttributes(headerStyle);
-      tr.appendTableCell("Age").getChild(0).asParagraph().setAttributes(headerStyle);
-      tr.appendTableCell("Not Selected").getChild(0).asParagraph().setAttributes(headerStyle);
-      tr.appendTableCell("Selected").getChild(0).asParagraph().setAttributes(headerStyle);
+      tr.appendTableCell("Current Job Title").setBackgroundColor("#DCE6F1").getChild(0).asParagraph().setAttributes(headerStyle);
+      tr.appendTableCell("Age").setBackgroundColor("#DCE6F1").getChild(0).asParagraph().setAttributes(headerStyle);
+      tr.appendTableCell("Not Selected").setBackgroundColor("#DCE6F1").getChild(0).asParagraph().setAttributes(headerStyle);
+      tr.appendTableCell("Selected").setBackgroundColor("#DCE6F1").getChild(0).asParagraph().setAttributes(headerStyle);
       
       tbl.setColumnWidth(0, 310);
       tbl.setColumnWidth(1, 50);
