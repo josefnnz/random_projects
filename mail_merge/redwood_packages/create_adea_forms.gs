@@ -49,8 +49,8 @@ function create_adea_forms()
   /** -------------------- LOAD NOTICE RANGE DATES SHEET -------------------- **/
 
   // Load sheet with notice range dates
-  var values_notice_ranges = ees.getSheetByName(NOTICE_RANGES_SHN).getRange(2, 1, 13, 5).getValues();
-  // var values_notice_ranges = ees.getSheetByName(NOTICE_RANGES_SHN).getRange(12, 1, 1, 5).getValues();
+  // var values_notice_ranges = ees.getSheetByName(NOTICE_RANGES_SHN).getRange(2, 1, 13, 5).getValues();
+  var values_notice_ranges = ees.getSheetByName(NOTICE_RANGES_SHN).getRange(12, 1, 1, 5).getValues();
   var NUM_OATH_L2S = values_notice_ranges.length;
 
   // Array column indices for required fields
@@ -83,17 +83,23 @@ function create_adea_forms()
   
   // default table styles
   var headerStyle = {};  
-  headerStyle[DocumentApp.Attribute.BOLD] = true;
   headerStyle[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
-  //headerStyle[DocumentApp.Attribute.BACKGROUND_COLOR] = '#336600';  
-  //headerStyle[DocumentApp.Attribute.FOREGROUND_COLOR] = '#FFFFFF';
-  
+  headerStyle[DocumentApp.Attribute.FONT_FAMILY] = 'Calibri';
+  headerStyle[DocumentApp.Attribute.FONT_SIZE] = 10;
+  headerStyle[DocumentApp.Attribute.BOLD] = true;
+  // headerStyle[DocumentApp.Attribute.BACKGROUND_COLOR] = '#336600';  
+  // headerStyle[DocumentApp.Attribute.FOREGROUND_COLOR] = '#FFFFFF';
+
   var cellStyle = {};
+  cellStyle[DocumentApp.Attribute.FONT_FAMILY] = 'Calibri';
+  cellStyle[DocumentApp.Attribute.FONT_SIZE] = 10;
   cellStyle[DocumentApp.Attribute.BOLD] = false;  
   //cellStyle[DocumentApp.Attribute.FOREGROUND_COLOR] = '#000000';
   
   var centerText = {};
   centerText[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
+  centerText[DocumentApp.Attribute.FONT_FAMILY] = 'Calibri';
+  centerText[DocumentApp.Attribute.FONT_SIZE] = 10;
 
   function mail_merge() 
   {
