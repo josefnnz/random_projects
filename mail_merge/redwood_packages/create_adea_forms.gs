@@ -82,24 +82,35 @@ function create_adea_forms()
   var SELECTED_CIDX = 6 - 1;
   
   // default table styles
+  var CELL_FONT_SIZE = 10;
+  var CELL_FONT_FAMILY = "Calibri";
+  var CELL_PADDING_TOP = 1;
+  var CELL_PADDING_BOTTOM = 1;
+
   var headerStyle = {};  
   headerStyle[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
-  headerStyle[DocumentApp.Attribute.FONT_FAMILY] = 'Calibri';
-  headerStyle[DocumentApp.Attribute.FONT_SIZE] = 10;
+  headerStyle[DocumentApp.Attribute.FONT_FAMILY] = CELL_FONT_FAMILY;
+  headerStyle[DocumentApp.Attribute.FONT_SIZE] = CELL_FONT_SIZE;
   headerStyle[DocumentApp.Attribute.BOLD] = true;
+  headerStyle[DocumentApp.Attribute.PADDING_TOP] = CELL_PADDING_TOP;
+  headerStyle[DocumentApp.Attribute.PADDING_BOTTOM] = CELL_PADDING_BOTTOM;
   // headerStyle[DocumentApp.Attribute.BACKGROUND_COLOR] = '#336600';  
   // headerStyle[DocumentApp.Attribute.FOREGROUND_COLOR] = '#FFFFFF';
 
   var cellStyle = {};
-  cellStyle[DocumentApp.Attribute.FONT_FAMILY] = 'Calibri';
-  cellStyle[DocumentApp.Attribute.FONT_SIZE] = 10;
+  cellStyle[DocumentApp.Attribute.FONT_FAMILY] = CELL_FONT_FAMILY;
+  cellStyle[DocumentApp.Attribute.FONT_SIZE] = CELL_FONT_SIZE;
   cellStyle[DocumentApp.Attribute.BOLD] = false;  
+  cellStyle[DocumentApp.Attribute.PADDING_TOP] = CELL_PADDING_TOP;
+  cellStyle[DocumentApp.Attribute.PADDING_BOTTOM] = CELL_PADDING_BOTTOM;
   //cellStyle[DocumentApp.Attribute.FOREGROUND_COLOR] = '#000000';
   
   var centerText = {};
   centerText[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
-  centerText[DocumentApp.Attribute.FONT_FAMILY] = 'Calibri';
-  centerText[DocumentApp.Attribute.FONT_SIZE] = 10;
+  centerText[DocumentApp.Attribute.FONT_FAMILY] = CELL_FONT_FAMILY;
+  centerText[DocumentApp.Attribute.FONT_SIZE] = CELL_FONT_SIZE;
+  centerText[DocumentApp.Attribute.PADDING_TOP] = CELL_PADDING_TOP;
+  centerText[DocumentApp.Attribute.PADDING_BOTTOM] = CELL_PADDING_BOTTOM;
 
   function mail_merge() 
   {
