@@ -146,6 +146,13 @@ function create_adea_forms()
       
       for (var row_grp = 0; row_grp < NUM_GROUPS; row_grp++)
       {
+        if (row_grp % 500 == 0)
+        {
+          doc_new_memo.saveAndClose();
+          doc_new_memo = DocumentApp.openById(file_new_memo.getId());
+          body = doc_new_memo.getBody();
+          tbl = body.findElement(DocumentApp.ElementType.TABLE).getElement();
+        }
         var curr_grp = curr_L2_groups[row_grp];
         var job_title = curr_grp[CURRENT_JOB_TITLE_CIDX];
         var age = curr_grp[AGE_CIDX];
