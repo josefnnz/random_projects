@@ -53,7 +53,7 @@ function create_request_one_time_payment_eib()
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 59; // Columns A to BG -- NEEDTOUPDATE
+  var NUM_COLS_TO_EXTRACT = 71; // Columns A to BG -- NEEDTOUPDATE
     
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
@@ -69,7 +69,7 @@ function create_request_one_time_payment_eib()
   var MIDDLE_PMT_AMT_CIDX = 14 - 1; //NEEDTOUPDATE
   var LAST_PMT_AMT_CIDX = 15 - 1; //NEEDTOUPDATE
   var NUM_PMTS_CIDX = 10 - 1; //NEEDTOUPDATE
-  var FIRST_PAY_DATE_CIDX = 23 - 1; //NEEDTOUPDATE
+  var FIRST_PAY_DATE_CIDX = 24 - 1; //NEEDTOUPDATE
   var LAST_PAY_DATE_CIDX = 71 - 1; //NEEDTOUPDATE
 
   function create_full_eib()
@@ -118,13 +118,15 @@ function create_request_one_time_payment_eib()
 
       // Extract required fields
       var eeid = add_leading_zeros(new String(curr[EEID_CIDX]), 6); // ensure EEID is 6 digits long
-      var trans_flag = curr[TRANS_FLAG_CIDX];
+      var trans_flag = curr[TRANS_FLAG_CIDX]; // boolean field
       var trans_bonus_amt = curr[TRANS_BONUS_AMT_CIDX];
-      var pmt_amt = curr[PMT_AMT_CIDX];
+      var first_pmt_amt = curr[FIRST_PMT_AMT_CIDX];
+      var middle_pmt_amt = curr[MIDDLE_PMT_AMT_CIDX];
+      var last_pmt_amt = curr[LAST_PMT_AMT_CIDX];
       var num_pmts = curr[NUM_PMTS_CIDX];
       var first_pay_date = curr[FIRST_PAY_DATE_CIDX];
 
-      if (trans_flag === "Y")
+      if (trans_flag)
       {
         // Add transition bonus payment if applicable -- transition bonus paid on first continued pay date
         pmts.push(create_eib_row(new String(sskey), eeid, Utilities.formatDate(first_pay_date, Session.getScriptTimeZone(), "yyyy-MM-dd"), TRANS_BONUS_PMT_CODE, trans_bonus_amt, USD_CURRENCY_ID));
@@ -132,13 +134,20 @@ function create_request_one_time_payment_eib()
       }
 
       // Add salary continuation payments for allotted number of payments
-      for (var i = FIRST_PAY_DATE_CIDX; i <= LAST_PAY_DATE_CIDX; i++)
+      for (var i = 0; i < num_pmts; i++)
       {
-        pay_date = curr[i];
-        if (!pay_date)
+        pay_date = curr[i + FIRST_PAY_DATE_CIDX];
+
+        var pmt_amt = middle_pmt_amt;
+        if (i == 0) 
         {
-          break; // Break loop if pay date is NULL -- already covered all required payments
-        }
+        	pmt_amt = first_pmt_amt;
+        } 
+        else if (i == num_pmts-1) 
+        {
+        	pmt_amt = last_pmt_amt;
+        } 
+
         pay_date = Utilities.formatDate(pay_date, Session.getScriptTimeZone(), "yyyy-MM-dd");
         pmts.push(create_eib_row(new String(sskey), eeid, pay_date, SAL_CONT_PMT_CODE, pmt_amt, USD_CURRENCY_ID));
         sskey++; // Increment spreadsheet key
