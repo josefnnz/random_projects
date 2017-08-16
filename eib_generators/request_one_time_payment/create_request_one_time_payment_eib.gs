@@ -35,10 +35,10 @@ function create_request_one_time_payment_eib()
   var USD_CURRENCY_ID = "USD"; // Currency ID for US Dollars
 
   // Google file ids
-  var MAIN_FOLDER_ID = "0B2QuBirnXYjxSW9sN2ltWDc2dVk"; // Folder: redwood_salary_continuation
-  var PMT_DET_SSID = "1kL9SwTA887XgsvQPMia1OoY_-oWFAYKLPg52ugdambY"; // File: CIC Payroll - US Regular Employees
+  var MAIN_FOLDER_ID = "0B8RZqzfVtu2lenAzSENTOWpWamc"; // Folder: redwood_salary_continuation
+  var PMT_DET_SSID = "1JKcUEYyEdeH4HMvHWDfQms0xgY-Vw6aXDGXJEWlnF_g"; // File: CIC Payroll - US Regular Employees
   var PMT_DET_SHN = "pay_continuation_details"; // Sheet with eeid, transition bonus amt, pmt amts, pay dates, etc.
-  var EIB_TML_REQ_ONE_TIME_PMT_SSID = "1zr7OsgYBXRbA9DKwxR3hAdeF4ToY23VMKPtv1ZDrvNA"; // File: Request_One-Time_Payment - GSheet
+  var EIB_TML_REQ_ONE_TIME_PMT_SSID = "1WQHJsRi2nLR_IgvyD7PwRwhvLB2gW01tlS_k2k8mvdw"; // File: Request_One-Time_Payment - GSheet
   var EIB_TML_REQ_ONE_TIME_PMT_SHN = "Request One Time Payment"; // Sheet to input pay details
 
   // Set folder where EIB will be created (also holds payment details ss and eib template)
