@@ -90,21 +90,9 @@ output = output.loc[output.loc[:,'vest_date'].notnull()] # Remove empty vest eve
 output.sort_values(['employee_id','grant_number','vest_date'], inplace=True)
 output.reset_index(drop=True, inplace=True)
 
-# cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','gender','ethnicity','mgr_eeid','mgr_legal_name','mgr_email',\
-#                  'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
-#                  'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
-#                  'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
-#                  'pay_rate_type','flsa','base_annualized_local','local_currency','fx_rate','base_annualized_usd',\
-#                  'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
-#                  'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
-#                  'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
-#                  'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
-#                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
-#                  'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work','term_date']
-# cwd_sens = oath.loc[:, cwd_sens_cols]
-# writer_cwd_sens = pandas.ExcelWriter('outputs/Oath Current Employee and Contingent Worker Details - Highly Sensitive ' + DATETIMESTAMP + '.xlsx')
-# cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
-# writer_cwd_sens.save()
-
-
-
+# Write to file
+DATETIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H_%M PDT")
+output.columns = ['Employee ID','Grant Type','Grant Number','Grant Date','Vest Date','Shares Vested'] # Rename columns for output
+writer = pd.ExcelWriter('vestings ' + DATETIMESTAMP + '.xlsx')
+output.to_excel(writer, 'Sheet1', index=False)
+writer.save()
