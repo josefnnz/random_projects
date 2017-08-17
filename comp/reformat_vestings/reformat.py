@@ -56,18 +56,55 @@ equity.drop(['product_type_name','plan_id','product_id','grant_type','grant_sequ
              'active_indicator','division_code','qty_granted','qty_outstanding'],\
              axis=1, inplace=True)
 
-required_fields = ['employee_id','legacy_yahoo_grant_type','client_grant_id_or_grant_number','grant_date']
+# Get number of row and columns in data frame
+# Note: df.shape returns tuple of (number of rows, number of columns) for the data frame
+NUM_ROWS_EQUITY_DF, NUM_COLS_EQUITY_DF = equity.shape
+
+# Set max number of vesting events for a grant in the report
+MAX_NUM_VESTING_EVENTS = 72
+
 # Fields to add in merge: ['vest_date','shares_vested_year','shares_vested']
 
+### Important Note for Future Python Pandas Use ###
+# Trap: When inserting data from an indexed pandas object, only items from the indexed object that 
+# have a corresponding index in the DataFrame will be added. The receiving DataFrame is not extended to
+# accommodate the new series. 
+# Solution: Using DataFrame VALUES attribute to return a numpy array -- a non-indexed object.
+# 
+# This problem with solution used in code below.
 
+# Create empty dataframe to store final table. INDEX is number of rows. COLUMNS is number of columns.
+output = pd.DataFrame(index=range(NUM_ROWS_EQUITY_DF*MAX_NUM_VESTING_EVENTS),\
+                      columns=['employee_id','grant_type','grant_number','grant_date','vest_date','shares_vested'])
 
+# Fill-in dataframe with vesting data
+static_cols = ['employee_id','grant_type','client_grant_id_or_grant_number','grant_date'] # Static cols per grant
+for i in range(MAX_NUM_VESTING_EVENTS):
+    first_entry_row = i*NUM_ROWS_EQUITY_DF
+    last_entry_row = first_entry_row + NUM_ROWS_EQUITY_DF
+    curr_vesting_date, curr_qty_vesting = 'vesting_date_' + str(i+1), 'qty_vesting_' + str(i+1)
+    output.iloc[first_entry_row:last_entry_row, :] = equity.loc[:, static_cols+[curr_vesting_date, curr_qty_vesting]].values
 
+# Cleanup resulting dataframe
+output = output.loc[output.loc[:,'vest_date'].notnull()] # Remove empty vest events
+output.sort_values(['employee_id','grant_number','vest_date'], inplace=True)
+output.reset_index(drop=True, inplace=True)
 
-
-
-
-
-
+# cwd_sens_cols = ['worker_type','emp_type','eeid','legal_name','gender','ethnicity','mgr_eeid','mgr_legal_name','mgr_email',\
+#                  'userid','last_hire_date','original_hire_date','active_status','ft_or_pt','fte_pct',\
+#                  'std_hrs','email','acquired_company','job_code','job_profile','job_family_group',\
+#                  'job_family','job_level','job_category','mgmt_level','comp_grade','comp_grade_profile',\
+#                  'pay_rate_type','flsa','base_annualized_local','local_currency','fx_rate','base_annualized_usd',\
+#                  'bonus_plan','target_bonus_pct','target_bonus_amt_local','target_bonus_amt_usd',\
+#                  'ttc_annualized_local','ttc_annualized_usd','wfh_flag','work_office','work_city',\
+#                  'work_state','work_country','work_region','is_ppl_mgr','layer','CEO_eeid','CEO_name','L2_eeid','L2_name',\
+#                  'L3_eeid','L3_name','L4_eeid','L4_name','L5_eeid','L5_name','L6_eeid','L6_name',\
+#                  'L7_eeid','L7_name','L8_eeid','L8_name','L9_eeid','L9_name','L10_eeid','L10_name',\
+#                  'L2_org_name','L3_org_name','L4_org_name','L2_or_L3_org_name','last_day_of_work','term_date']
+# cwd_sens = oath.loc[:, cwd_sens_cols]
+# writer_cwd_sens = pandas.ExcelWriter('outputs/Oath Current Employee and Contingent Worker Details - Highly Sensitive ' + DATETIMESTAMP + '.xlsx')
+# cwd_sens.to_excel(writer_cwd_sens, 'Sheet1', index=False)
+# writer_cwd_sens.save()
 
 
 
