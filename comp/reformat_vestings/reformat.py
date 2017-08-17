@@ -51,7 +51,7 @@ equity.columns = ['product_type_name','plan_id','product_id','grant_type','grant
                   'vesting_date_70','qty_vesting_70','vesting_date_71','qty_vesting_71','vesting_date_72','qty_vesting_72']
 
 # Remove extraneous columns
-equity.drop(['product_type_name','plan_id','product_id','grant_type','grant_sequence_number','grant_custom_field_1',\
+equity.drop(['product_type_name','plan_id','product_id','grant_sequence_number','grant_custom_field_1',\
              'grant_custom_field_2','grant_custom_field_3','grant_custom_field_4','participant_name','participant_id',\
              'active_indicator','division_code','qty_granted','qty_outstanding'],\
              axis=1, inplace=True)
