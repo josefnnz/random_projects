@@ -78,7 +78,7 @@ function spawn_L3_file()
   // Array column indices for required fields
   // NOTE: Array column indices do not match location on ss. SS increments indices by 1.
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
-  var L3_CIDX = 4 - 1;
+  var L3_CIDX = 5 - 1;
 
   function create_L3_file()
   {
