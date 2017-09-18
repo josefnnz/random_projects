@@ -112,7 +112,9 @@ function spawn_L3_file()
     var sheet_new_L3_file = SpreadsheetApp.openById(file_tml_cpy.getId()).getSheetByName(TML_SPAWN_FILE_SHN);
     sheet_new_L3_file.getRange(5, 1, 1, 1).setValue(L3_name);
     sheet_new_L3_file.getRange(7, 1, NUM_ROWS_TO_WRITE, NUM_COLS_TO_WRITE).setValues(values_ees_under_L3);
+    SpreadsheetApp.flush()
     sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, SALARY_INCREASE_INPUTTED_CIDX, NUM_ROWS_TO_WRITE, NUM_SALARY_INCREASE_INPUTTED).setFormulas(formulas_salary_increase_inputted);
+    SpreadsheetApp.flush()
     sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, FINAL_NEW_SALARY_SECTION_START_CIDX, NUM_ROWS_TO_WRITE, NUM_FINAL_NEW_SALARY_SECTION).setFormulas(formulas_final_new_salary_section);
     SpreadsheetApp.flush()
 
