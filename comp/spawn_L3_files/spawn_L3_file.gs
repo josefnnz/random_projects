@@ -49,7 +49,7 @@ function spawn_L3_file()
 
   var L2_FILE_SSID = ss.getId();
   var EMPLOYEES_SHN = "Comp Review - EE Data";
-  var SPAWN_L3_FILE_TAB_SHN = "SPAWN L3 FILE";
+  var SPAWN_L3_FILE_TAB_SHN = "Spawn L3 File";
   var SPAWN_FOLDER_ID = mapping[L2_FILE_SSID];
   var TML_SPAWN_FILE_SSID = "1KsmcRf7P1GhkS4wardO-QvNdkTgbGZmZNGsRJMyU-IA";
   var TML_SPAWN_FILE_SHN = "Sheet1";
