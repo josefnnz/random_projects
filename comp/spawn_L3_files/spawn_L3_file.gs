@@ -80,15 +80,28 @@ function spawn_L3_file()
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
   var L3_CIDX = 5 - 1;
 
+  // Identify location of columns with formulas
+  var FINAL_NEW_SALARY_SECTION_START_CIDX = 41;
+  var FINAL_NEW_SALARY_SECTION_END_CIDX = 44;
+  var SALARY_INCREASE_INPUTTED_CIDX = 81;
+
+  // Lengths of formula sections
+  var NUM_FINAL_NEW_SALARY_SECTION = FINAL_NEW_SALARY_SECTION_END_CIDX - FINAL_NEW_SALARY_SECTION_START_CIDX + 1;
+  var NUM_SALARY_INCREASE_INPUTTED = 1;
+
   function create_L3_file()
   {
     // Get L3 to make file for
     var L3_name = sheet_spawn_tab.getRange(1, 3, 1, 1).getValue();
 
-    // Create array of payments to fill-in EIB
+    // Create array of employee data values to fill-in spreadsheet
     var values_ees_under_L3 = values_ees.filter(function(row) { return row[L3_CIDX] == L3_name });
     var NUM_ROWS_TO_WRITE = values_ees_under_L3.length;
     var NUM_COLS_TO_WRITE = values_ees_under_L3[0].length;
+
+    // Create array of formulas to fill-in spreadsheet
+    var formulas_final_new_salary_section = ees.getRange(FIRST_ROW_EXTRACTED, FINAL_NEW_SALARY_SECTION_START_CIDX, NUM_ROWS_TO_WRITE, NUM_FINAL_NEW_SALARY_SECTION).getFormulas();
+    var formulas_salary_increase_inputted = ees.getRange(FIRST_ROW_EXTRACTED, SALARY_INCREASE_INPUTTED_CIDX, NUM_ROWS_TO_WRITE, NUM_SALARY_INCREASE_INPUTTED).getFormulas();
 
     // Create filename -- append current datetime in format yyyy-MM-dd HH_MM PDT
     var datetimestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH_mm") + " PDT";
@@ -99,6 +112,8 @@ function spawn_L3_file()
     var sheet_new_L3_file = SpreadsheetApp.openById(file_tml_cpy.getId()).getSheetByName(TML_SPAWN_FILE_SHN);
     sheet_new_L3_file.getRange(5, 1, 1, 1).setValue(L3_name);
     sheet_new_L3_file.getRange(7, 1, NUM_ROWS_TO_WRITE, NUM_COLS_TO_WRITE).setValues(values_ees_under_L3);
+    sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, FINAL_NEW_SALARY_SECTION_START_CIDX, NUM_ROWS_TO_WRITE, NUM_FINAL_NEW_SALARY_SECTION).setFormulas(formulas_final_new_salary_section);
+    sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, SALARY_INCREASE_INPUTTED_CIDX, NUM_ROWS_TO_WRITE, NUM_SALARY_INCREASE_INPUTTED).setFormulas(formulas_salary_increase_inputted);
     SpreadsheetApp.flush()
 
     // Save new EIB as Excel file, and delete GSheet version
