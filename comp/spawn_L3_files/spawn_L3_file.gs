@@ -83,10 +83,12 @@ function spawn_L3_file()
   // Identify location of columns with formulas
   var FINAL_NEW_SALARY_SECTION_START_CIDX = 41;
   var FINAL_NEW_SALARY_SECTION_END_CIDX = 44;
+  var FINAL_INCREASE_REASON_CIDX = 58;
   var SALARY_INCREASE_INPUTTED_CIDX = 82;
 
   // Lengths of formula sections
   var NUM_FINAL_NEW_SALARY_SECTION = FINAL_NEW_SALARY_SECTION_END_CIDX - FINAL_NEW_SALARY_SECTION_START_CIDX + 1;
+  var NUM_FINAL_INCREASE_REASON = 1;
   var NUM_SALARY_INCREASE_INPUTTED = 1;
 
   function create_L3_file()
@@ -101,6 +103,7 @@ function spawn_L3_file()
 
     // Create array of formulas to fill-in spreadsheet
     var formulas_final_new_salary_section = ees.getRange(FIRST_ROW_EXTRACTED, FINAL_NEW_SALARY_SECTION_START_CIDX, NUM_ROWS_TO_WRITE, NUM_FINAL_NEW_SALARY_SECTION).getFormulas();
+    var formulas_final_increase_reason = ees.getRange(FIRST_ROW_EXTRACTED, FINAL_INCREASE_REASON_CIDX, NUM_ROWS_TO_WRITE, NUM_FINAL_INCREASE_REASON).getFormulas();
     var formulas_salary_increase_inputted = ees.getRange(FIRST_ROW_EXTRACTED, SALARY_INCREASE_INPUTTED_CIDX, NUM_ROWS_TO_WRITE, NUM_SALARY_INCREASE_INPUTTED).getFormulas();
 
     // Create filename -- append current datetime in format yyyy-MM-dd HH_MM PDT
@@ -113,9 +116,11 @@ function spawn_L3_file()
     sheet_new_L3_file.getRange(5, 1, 1, 1).setValue(L3_name);
     sheet_new_L3_file.getRange(7, 1, NUM_ROWS_TO_WRITE, NUM_COLS_TO_WRITE).setValues(values_ees_under_L3);
     SpreadsheetApp.flush()
-    sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, SALARY_INCREASE_INPUTTED_CIDX, NUM_ROWS_TO_WRITE, NUM_SALARY_INCREASE_INPUTTED).setFormulas(formulas_salary_increase_inputted);
-    SpreadsheetApp.flush()
     sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, FINAL_NEW_SALARY_SECTION_START_CIDX, NUM_ROWS_TO_WRITE, NUM_FINAL_NEW_SALARY_SECTION).setFormulas(formulas_final_new_salary_section);
+    SpreadsheetApp.flush()
+    sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, FINAL_INCREASE_REASON_CIDX, NUM_ROWS_TO_WRITE, NUM_FINAL_INCREASE_REASON).setFormulas(formulas_final_increase_reason);
+    SpreadsheetApp.flush()
+    sheet_new_L3_file.getRange(FIRST_ROW_EXTRACTED, SALARY_INCREASE_INPUTTED_CIDX, NUM_ROWS_TO_WRITE, NUM_SALARY_INCREASE_INPUTTED).setFormulas(formulas_salary_increase_inputted);
     SpreadsheetApp.flush()
 
     // Save new EIB as Excel file, and delete GSheet version
