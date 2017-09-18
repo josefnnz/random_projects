@@ -83,7 +83,7 @@ function spawn_L3_file()
   // Identify location of columns with formulas
   var FINAL_NEW_SALARY_SECTION_START_CIDX = 41;
   var FINAL_NEW_SALARY_SECTION_END_CIDX = 44;
-  var SALARY_INCREASE_INPUTTED_CIDX = 81;
+  var SALARY_INCREASE_INPUTTED_CIDX = 82;
 
   // Lengths of formula sections
   var NUM_FINAL_NEW_SALARY_SECTION = FINAL_NEW_SALARY_SECTION_END_CIDX - FINAL_NEW_SALARY_SECTION_START_CIDX + 1;
