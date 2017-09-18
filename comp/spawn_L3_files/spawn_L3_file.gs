@@ -29,20 +29,18 @@ function spawn_L3_file()
   //  return;
   // }
 
-  // // Spreadsheet ID to Spawn Folder ID mapping
-  // var mapping = {"1RBFl7WbdSqP1jOZboWcq5dmSQP9lBWkoDA6oSDvXAho" : "0B8RZqzfVtu2lcWdadkNyTEVzc00", // TEST TO ALLIE KLINE FOLDER
-  //                "0B1f8ZpGaVGpdM1pORHVLSWhHdDQ" : "0B8RZqzfVtu2lcWdadkNyTEVzc00", // Allie Kline
-  //                "0B1f8ZpGaVGpdV3RKNDVFN09pY1k" : "0B8RZqzfVtu2lSURRbUFaZ2VCMlU", // Atte Lahtiranta
-  //                "0B1f8ZpGaVGpdVzhRaGlWMnVPT3c" : "0B8RZqzfVtu2lNGYtZ3dveTl5dGs", // Holly Hess Groos
-  //                "0B1f8ZpGaVGpdNE5zSnN1bWVYam8" : "0B8RZqzfVtu2lTUEyajB3UEIwNkU", // Jeffrey Bonforte
-  //                "0B1f8ZpGaVGpdMFhTQ2ctaFg1VzA" : "0B8RZqzfVtu2lM3JaeGdZanh2aHM", // John DeVine
-  //                "0B1f8ZpGaVGpdQlRhQWNYaUphZHc" : "0B8RZqzfVtu2lelhwYzI0WHIzcXc", // Julie Jacobs
-  //                "0B1f8ZpGaVGpdZ2x6TGRfMDZ1QWc" : "0B8RZqzfVtu2lVHBKM2tOSFBfdWc", // Mark Roszkowski
-  //                "0B1f8ZpGaVGpdMVFfaTJqR19wcU0" : "0B8RZqzfVtu2lTVZlS3VmbkpkRjA", // Ralf Jacob
-  //                "0B1f8ZpGaVGpdZHJXRTQ4ZnlaWk0" : "0B8RZqzfVtu2lS0MyV1h4RER2b1k", // Simon Khalaf
-  //                "0B1f8ZpGaVGpdUi10S1FCd01qaFE" : "0B8RZqzfVtu2lVFNkY3dJVmFTb0k", // Tim Mahlman
-  //                "0B1f8ZpGaVGpdLXl5WEI3b3psVWM" : "0B8RZqzfVtu2lZzlvR0JjQ1VRWVE"} // Timothy Lemmon
-  var mapping = {"1RBFl7WbdSqP1jOZboWcq5dmSQP9lBWkoDA6oSDvXAho" : "0B8RZqzfVtu2lcWdadkNyTEVzc00"} // TEST TO ALLIE KLINE FOLDER
+  // Spreadsheet ID to Spawn Folder ID mapping
+  var mapping = {"1J2F8DOLjs3hDahvGjGG5NTZP0MRkCoB0SsvRXZT0VEI" : "0B8RZqzfVtu2lcWdadkNyTEVzc00", // Allie Kline
+                 "1NdIKZub80_20RyIwEST4PQVkWN3XYcAHMlwsRvfWzao" : "0B8RZqzfVtu2lSURRbUFaZ2VCMlU", // Atte Lahtiranta
+                 "1kO49XI5KsEtQtRGGH2WWhp6MCKcazVexcSax_bpXIH0" : "0B8RZqzfVtu2lNGYtZ3dveTl5dGs", // Holly Hess Groos
+                 "1LjHOeTP9955OisrH-SyMExzUQSO2OYSzomziMxixTK4" : "0B8RZqzfVtu2lTUEyajB3UEIwNkU", // Jeffrey Bonforte
+                 "1rFycbs2N3mRW0r8YpPaSAufLbYoUUBuWhw416rlJbn8" : "0B8RZqzfVtu2lM3JaeGdZanh2aHM", // John DeVine
+                 "1GoWFNJ7HKV6Soj4LNGi2LjuiL3Uhcixt6mknc71RWzg" : "0B8RZqzfVtu2lelhwYzI0WHIzcXc", // Julie Jacobs
+                 "1qJOC3zJqi-Kat0ZT1uQe8TOYb5po4mLyOS-oYFyFNVk" : "0B8RZqzfVtu2lVHBKM2tOSFBfdWc", // Mark Roszkowski
+                 "1XStLZ_Nbo7Xgb-EzBUWYmQxuM1SYuX2edeXsSz6eb6w" : "0B8RZqzfVtu2lTVZlS3VmbkpkRjA", // Ralf Jacob
+                 "170UtoblflH8534UygPYrU3xTqtbG5Afznwyqp3wnC74" : "0B8RZqzfVtu2lS0MyV1h4RER2b1k", // Simon Khalaf
+                 "1CpSWOfHC-IJXEqGQnQnVestO5aEPZ1FEjV80unFYslQ" : "0B8RZqzfVtu2lVFNkY3dJVmFTb0k", // Tim Mahlman
+                 "1Mg_zyaDCBmB4iOWYHPNmVd-wnaWZ7w1e7ID6Puwo_jU" : "0B8RZqzfVtu2lZzlvR0JjQ1VRWVE"} // Timothy Lemmon
 
   // Google file ids
   var ss = SpreadsheetApp.getActive();
