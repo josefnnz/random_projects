@@ -41,7 +41,8 @@ function spawn_L3_file()
                  "1XStLZ_Nbo7Xgb-EzBUWYmQxuM1SYuX2edeXsSz6eb6w" : "0B8RZqzfVtu2lTVZlS3VmbkpkRjA", // Ralf Jacob
                  "170UtoblflH8534UygPYrU3xTqtbG5Afznwyqp3wnC74" : "0B8RZqzfVtu2lS0MyV1h4RER2b1k", // Simon Khalaf
                  "1CpSWOfHC-IJXEqGQnQnVestO5aEPZ1FEjV80unFYslQ" : "0B8RZqzfVtu2lVFNkY3dJVmFTb0k", // Tim Mahlman
-                 "1Mg_zyaDCBmB4iOWYHPNmVd-wnaWZ7w1e7ID6Puwo_jU" : "0B8RZqzfVtu2lZzlvR0JjQ1VRWVE"} // Timothy Lemmon
+                 "1Mg_zyaDCBmB4iOWYHPNmVd-wnaWZ7w1e7ID6Puwo_jU" : "0B8RZqzfVtu2lZzlvR0JjQ1VRWVE", // Timothy Lemmon
+                 "1XR4LrU5ZmtvHV7T1H2_CCVENpzAdXR2JQPRKV1vbC88" : "0B1f8ZpGaVGpdS3BZSV9uYkIzTHc"} // VP file
 
   // Google file ids
   var ss = SpreadsheetApp.getActive();
@@ -77,6 +78,7 @@ function spawn_L3_file()
   // Array column indices for required fields
   // NOTE: Array column indices do not match location on ss. SS increments indices by 1.
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
+  var L2_CIDX = 4 - 1;
   var L3_CIDX = 5 - 1;
 
   // Identify location of columns with formulas
