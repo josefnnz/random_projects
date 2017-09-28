@@ -25,16 +25,16 @@ function create_term_notices()
 
   // Confirm user wants to run script
   var ui = SpreadsheetApp.getUi();
-  var response = ui.alert("Please check cells C1 and C2 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
+  var response = ui.alert("Please check cells B1, B3, and B4 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
   if (response !== ui.Button.OK) {
    return;
   }
 
   // Google file ids
-  var TERM_NOTICE_FOLDER_ID = "0B2QuBirnXYjxbGtseGZVbWhWWG8"; // Folder: california_change_of_status_documents
-  var TERM_NOTICE_NON_TRANSITION_TEMPLATE_ID = "1EQa0S3uXW2Dtdx6k9YbvKcdO5DX6myiQgxiQYfCj6mA"; // File: template_term_notice_nontransition
-  var TERM_NOTICE_TRANSITION_TEMPLATE_ID = "1eV4o0RM4m1LdgPHbzlYCFdSMWUOrZn1nUevDJ1OToDY"; // File: template_term_notice_transition
-  var RIFS_SSID = "1s-fOV7IZ4ow-N6GTpqtiXg9j9VJR7nvQ3xMkTRvXsqw"; // File: Impacted Yahoos
+  var TERM_NOTICE_FOLDER_ID = "0B8RZqzfVtu2lN3pKZzVqa1FtU1k"; // Folder: term_notice_documents
+  var TERM_NOTICE_NON_TRANSITION_TEMPLATE_ID = "1aYNHAG-TtPOqTDnNP_6gEfxz5YvilCbRMT4EtKi0J5g"; // File: template_term_notice_nontransition
+  var TERM_NOTICE_TRANSITION_TEMPLATE_ID = "1_Wbc0p3ofz7HBmCH9cgCIYy37H7DSk0bpmtzaNt1LdQ"; // File: template_term_notice_transition
+  var RIFS_SSID = "1SjU_MwI4Sw4lhcECOHIin3Px2JXQMmXlpFQzx3VE8Vk"; // File: Impacted Yahoos
   var RIFS_SHN = "create_docs"; // Sheet containing RIF'd employees to create docs for
 
   // Set folder where California Change of Status documents will be created
@@ -44,8 +44,8 @@ function create_term_notices()
   var ees = SpreadsheetApp.openById(RIFS_SSID).getSheetByName(RIFS_SHN);
 
   // Identify specific first and last rows to extract
-  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 3, 1, 1); //NEEDTOUPDATE
-  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 3, 1, 1); //NEEDTOUPDATE
+  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(3, 2, 1, 1); //NEEDTOUPDATE
+  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(4, 2, 1, 1); //NEEDTOUPDATE
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
@@ -74,6 +74,9 @@ function create_term_notices()
   var USA_STATE_ISO_CODE_CIDX = 20 - 1;
   var ADEA_FLAG_CIDX = 26 - 1;
   var CIC_ELIGIBILITY_FLAG_CIDX = 27 - 1;
+
+  // Get global data fields for agreement
+  var DATE_OF_AGREEMENT = Utilities.formatDate(ees.getRange(1, 2).getValue(), Session.getScriptTimeZone(), "MMMMM d, yyyy");
   
   function mail_merge() 
   {
@@ -87,7 +90,6 @@ function create_term_notices()
       if (is_eligible_for_cic) 
       {
         // Extract required fields
-        var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MMMMM d, yyyy");
         var eeid = curr[EEID_CIDX];
         var legal_first_name = curr[LEGAL_FIRST_NAME_CIDX];
         var legal_last_name = curr[LEGAL_LAST_NAME_CIDX];
@@ -108,13 +110,15 @@ function create_term_notices()
 
         // Copy the template
         var filename = "TNRC - " + adea_flag + " - " + oath_L2 + " - " + usa_state + " - " + full_legal_name + " (" + eeid + ")";
+        //var filename = "TNRC - " + legal_last_name + "_" + legal_first_name + " - " + adea_flag + " - " + oath_L2 + " - " + usa_state + " (" + eeid + ")";
         var TERM_NOTICE_TEMPLATE_ID = (is_ee_with_transition) ? TERM_NOTICE_TRANSITION_TEMPLATE_ID : TERM_NOTICE_NON_TRANSITION_TEMPLATE_ID;
         var file_new_ee_doc = DriveApp.getFileById(TERM_NOTICE_TEMPLATE_ID).makeCopy(filename, folder);
       
         // Fill-in copy with employee details
         var doc_new_ee_doc = DocumentApp.openById(file_new_ee_doc.getId());
         var body = doc_new_ee_doc.getBody();
-        body.replaceText("<<today>>", today);
+
+        body.replaceText("<<today>>", DATE_OF_AGREEMENT);
         body.replaceText("<<full_legal_name>>", full_legal_name);
         body.replaceText("<<address_line_1>>", address_line_1); //NEEDTOUPDATE
         if (address_line_2)
