@@ -31,9 +31,9 @@ function create_adea_forms()
   // }
 
   // Google file ids
-  var ADEA_FOLDER_ID = "0B2QuBirnXYjxd0xBbXpVZkVJWTg"; // Folder: adea_documents
-  var ADEA_TEMPLATE_ID = "1IT5D7rZzlBk9eAt66vJz7gU7FMqWnFnJ2pDJ2tVy_RI"; // File: template_adea
-  var ADEA_DATA_SSID = "1PjWyLTJjMUjtYAN39pzDxbU0bhsIyR6fSlTRmlZsvFQ"; // File: DATAFILE_adea_data
+  var ADEA_FOLDER_ID = "0B8RZqzfVtu2lLWZvUFBoOEZNX3c"; // Folder: adea_documents
+  var ADEA_TEMPLATE_ID = "1rIwImJDe3n1nUFF4luBTvgrP0zDiJ05a7HhFZFe3CbM"; // File: template_adea
+  var ADEA_DATA_SSID = "17C32eT9DopnmTdS4grHGbj1i-muw7p1-A3NJiQUF9qM"; // File: DATAFILE_adea_data
   var ADEA_DATA_SHN = "FORMATTED_ADEA_DATA"; // Sheet containing complete USA employee selection pool used
   var NOTICE_RANGES_SHN = "OATH_L2_NOTICE_RANGES"; // Sheet containing notice range dates by Oath L2 / L3 orgs
 
@@ -64,7 +64,7 @@ function create_adea_forms()
 
   // Identify specific first and last rows to extract from selection pool sheet
   var FIRST_ROW_EXTRACTED = 5; //NEEDTOUPDATE
-  var LAST_ROW_EXTRACTED = 7060; //NEEDTOUPDATE
+  var LAST_ROW_EXTRACTED = 7027; //NEEDTOUPDATE
 
   // Identify total number of rows and columns to extract from selection pool sheet
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
@@ -114,8 +114,8 @@ function create_adea_forms()
 
   function mail_merge() 
   {
-    var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MMMMM d, yyyy");
-    today = "August 2, 2017"
+    // var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MMMMM d, yyyy");
+    var today = Utilities.formatDate(ees.getSheetByName(ADEA_DATA_SHN).getRange(1, 2).getValue(), Session.getScriptTimeZone(), "MMMMM d, yyyy");
     for (var row_notice_range = 0; row_notice_range < NUM_OATH_L2S; row_notice_range++)
     {
       curr_notice_range = values_notice_ranges[row_notice_range];
@@ -180,9 +180,9 @@ function create_adea_forms()
       doc_new_memo.saveAndClose();
     
       // save memo as pdf in drive root directory. delete memo as google doc
-      var pdf_version = folder.createFile(file_new_memo.getAs("application/pdf"));
-      pdf_version.setName(filename);
-      file_new_memo.setTrashed(true);
+      //var pdf_version = folder.createFile(file_new_memo.getAs("application/pdf"));
+      //pdf_version.setName(filename);
+      //file_new_memo.setTrashed(true);
     }
   }
   mail_merge();
