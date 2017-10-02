@@ -24,15 +24,15 @@ function create_california_change_of_status_documents()
 
   // Confirm user wants to run script
   var ui = SpreadsheetApp.getUi();
-  var response = ui.alert("Please check cells C1 and C2 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
+  var response = ui.alert("Please check cells B3 and B4 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
   if (response !== ui.Button.OK) {
    return;
   }
 
   // Google file ids
-  var CA_STATUS_CHANGE_FOLDER_ID = "0B2QuBirnXYjxNGRMMEhJV0RHTzg"; // Folder: california_change_of_status_documents
-  var CA_STATUS_CHANGE_TEMPLATE_ID = "10rH6rHEvrFroq6U5JO4TI3IEcxpm19XNc3Qt-A7QWjs"; // File: template_california_change_of_status
-  var RIFS_SSID = "1s-fOV7IZ4ow-N6GTpqtiXg9j9VJR7nvQ3xMkTRvXsqw"; // File: Impacted Yahoos
+  var CA_STATUS_CHANGE_FOLDER_ID = "0B8RZqzfVtu2lVDJrV01vVjhueUk"; // Folder: california_change_of_status_documents
+  var CA_STATUS_CHANGE_TEMPLATE_ID = "1mmbxFaMVp3dBCExVYc9Y_pmJ30YpJLARn6eQmemTBNM"; // File: template_california_change_of_status
+  var RIFS_SSID = "1SjU_MwI4Sw4lhcECOHIin3Px2JXQMmXlpFQzx3VE8Vk"; // File: Impacted Yahoos
   var RIFS_SHN = "create_docs"; // Sheet containing RIF'd employees to create docs for
 
   // Set folder where California Change of Status documents will be created
@@ -42,12 +42,12 @@ function create_california_change_of_status_documents()
   var ees = SpreadsheetApp.openById(RIFS_SSID).getSheetByName(RIFS_SHN);
 
   // Identify specific first and last rows to extract
-  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 3, 1, 1); //NEEDTOUPDATE
-  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 3, 1, 1); //NEEDTOUPDATE
+  var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(3, 2, 1, 1); //NEEDTOUPDATE
+  var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(4, 2, 1, 1); //NEEDTOUPDATE
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 59; // Columns A to BG -- NEEDTOUPDATE
+  var NUM_COLS_TO_EXTRACT = 32; // Columns A to AF -- NEEDTOUPDATE
 
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
