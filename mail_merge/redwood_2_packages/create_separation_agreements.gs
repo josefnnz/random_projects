@@ -108,6 +108,11 @@ function mail_merge()
     var home_address_line_2 = curr[HOME_ADDRESS_LINE_2_CIDX];
     var last_day_of_work = curr[LAST_DAY_OF_WORK_CIDX];
     var separation_date = curr[SEPARATION_DATE_CIDX];
+    var severance_plan = curr[SEVERANCE_PLAN_CIDX];
+    var has_cic_plan = severance_plan == CIC;
+    var has_oath_plan = severance_plan == OATH;
+    var transition_flag = curr[TRANSITION_FLAG_CIDX];
+    var is_transition = transition_flag == TRANS;
     var cic_salary_cont_mths_including_notice_period = curr[CIC_PLAN_SALARY_CONTINUATION_MONTHS_INCLUDING_NOTICE_PERIOD_CIDX];
     var cic_salary_cont_mths_minus_notice_period = curr[CIC_PLAN_SALARY_CONTINUATION_MONTHS_MINUS_NOTICE_PERIOD_CIDX];
     var transition_bonus_amount = curr[TRANSITION_BONUS_AMOUNT_CIDX];
@@ -141,14 +146,25 @@ function mail_merge()
     body.replaceText("<<legal_first_name>>", legal_first_name);
     body.replaceText("<<last_day_of_work>>", last_day_of_work);
     body.replaceText("<<separation_date>>", separation_date);
-    body.replaceText("<<salary_continuation_months_including_notice_period>>", cic_salary_cont_mths_including_notice_period);
-    body.replaceText("<<salary_continuation_months_minus_notice_period>>", cic_salary_cont_mths_minus_notice_period);
-    body.replaceText("<<transition_bonus_amount>>", transition_bonus_amount);
-    body.replaceText("<<base_compensation_payout_amount>>", oath_base_compensation_payout_amount);
-    body.replaceText("<<weeks_of_base_compensation>>", oath_weeks_of_base_compensation);
-    body.replaceText("<<oath_plan_months_of_cobra_coverage>>", oath_plan_months_of_cobra_coverage);
-    body.replaceText("<<cic_plan_months_of_cobra_coverage>>", cic_plan_months_of_cobra_coverage);
     body.replaceText("<<employee_id>>", eeid);
+
+    if (has_cic_plan)
+    {
+      body.replaceText("<<salary_continuation_months_including_notice_period>>", cic_salary_cont_mths_including_notice_period);
+      body.replaceText("<<salary_continuation_months_minus_notice_period>>", cic_salary_cont_mths_minus_notice_period);
+      body.replaceText("<<cic_plan_months_of_cobra_coverage>>", cic_plan_months_of_cobra_coverage);
+    }
+    else if (has_oath_plan)
+    {
+      body.replaceText("<<base_compensation_payout_amount>>", oath_base_compensation_payout_amount);
+      body.replaceText("<<weeks_of_base_compensation>>", oath_weeks_of_base_compensation);
+      body.replaceText("<<oath_plan_months_of_cobra_coverage>>", oath_plan_months_of_cobra_coverage);
+    }
+
+    if (is_transition)
+    {
+      body.replaceText("<<transition_bonus_amount>>", transition_bonus_amount);
+    }
 
     if (has_nonsales_bonus_plan)
     {
@@ -177,6 +193,9 @@ function mail_merge()
     pdf_version.setName(filename);
     file_new_ee_doc.setTrashed(true);
 
+    // Write unique URL for new file
+    ees.getRange(row+FIRST_ROW_EXTRACTED, 1, 1, 1).setValue("https://drive.google.com/a/oath.com/file/d/" + pdf_version.getId() + "/view?usp=sharing");
+    SpreadsheetApp.flush();
   }
 }
 
