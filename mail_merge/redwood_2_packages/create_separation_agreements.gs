@@ -1,11 +1,3 @@
-// // Confirm user wants to run script
-// var ui = SpreadsheetApp.getUi();
-// var response = ui.alert("Please check cells B1, B3, and B4 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
-// if (response !== ui.Button.OK) 
-// {
-//  return;
-// }
-
 // Constants
 var EMPTY_STRING = "";
 var CIC = "CIC"
@@ -81,8 +73,8 @@ var folder = DriveApp.getFolderById(SEPARATION_AGREEMENTS_FOLDER_ID);
 var ees = SpreadsheetApp.openById(RIFS_SSID).getSheetByName(RIFS_SHN);
 
 // Starting and Ending Rows of Table
-var FIRST_ROW_EXTRACTED = 11;
-var LAST_ROW_EXTRACTED = 12;
+var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 2, 1, 1);
+var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 2, 1, 1);
 
 // Identify total number of rows and columns to extract
 var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
@@ -94,6 +86,14 @@ var NUM_EES = values_ees.length;
 
 function mail_merge()
 {
+  // Confirm user wants to run script
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert("Please check cells B1 and B2 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
+  if (response !== ui.Button.OK) 
+  {
+   return;
+  }
+
   for (var row = 0; row < NUM_EES; row++)
   {
     // Extract current employee
