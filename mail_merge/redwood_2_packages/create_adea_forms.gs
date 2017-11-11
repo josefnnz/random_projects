@@ -89,8 +89,8 @@ function create_adea_forms()
   // default table styles
   var CELL_FONT_SIZE = 10;
   var CELL_FONT_FAMILY = "Calibri";
-  var CELL_PADDING_TOP = 2;
-  var CELL_PADDING_BOTTOM = 2;
+  var CELL_PADDING_TOP = 0;
+  var CELL_PADDING_BOTTOM = 0;
 
   var headerStyle = {};  
   headerStyle[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
