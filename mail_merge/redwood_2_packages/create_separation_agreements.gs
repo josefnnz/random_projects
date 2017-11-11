@@ -136,7 +136,7 @@ function create_separation_agreements()
       var work_location = curr[WORK_LOCATION_CIDX];
 
       // Copy the template
-      var filename = work_location + " - " + sep_agmt_tmpl + " - " + adea_flag + " - " + L2 + " - " + california_flag + " - " + full_legal_name + " (" + eeid + ")";
+      var filename = "AGMT - " + work_location + " - " + sep_agmt_tmpl + " - " + adea_flag + " - " + L2 + " - " + california_flag + " - " + full_legal_name + " (" + eeid + ")";
       var term_notice_tmpl_id = mapping[sep_agmt_tmpl];
       var file_new_ee_doc = DriveApp.getFileById(term_notice_tmpl_id).makeCopy(filename, folder);
 
