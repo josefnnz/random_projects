@@ -82,7 +82,7 @@ function create_separation_agreements()
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 29; // Columns A - AC
+  var NUM_COLS_TO_EXTRACT = 31; // Columns A - AC
 
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
