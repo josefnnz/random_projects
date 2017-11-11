@@ -106,7 +106,7 @@ function create_ccos()
       var work_location = curr[WORK_LOCATION_CIDX];
 
       // Copy the template
-      var filename = work_location + " - " + sep_agmt_tmpl + " - " + adea_flag + " - " + L2 + " - " + california_flag + " - " + full_legal_name + " (" + eeid + ")";
+      var filename = "CCOS - " + work_location + " - " + sep_agmt_tmpl + " - " + adea_flag + " - " + L2 + " - " + california_flag + " - " + full_legal_name + " (" + eeid + ")";
       var file_new_ee_doc = DriveApp.getFileById(CALIFORNIA_CHANGE_OF_STATUS_TMPL_ID).makeCopy(filename, folder);
 
       // Fil-in copy with employee details
