@@ -42,6 +42,8 @@ function create_ccos()
   var TRANSITION_BONUS_AMOUNT_CIDX = 27 - 1;
   var OAB_OR_SIP_CIDX = 28 - 1;
   var RETENTION_FLAG_CIDX = 29 - 1;
+  var L2_CIDX = 30 - 1;
+  var WORK_LOCATION_CIDX = 31 - 1;
 
   // Google file ids
   var CALIFORNIA_CHANGE_OF_STATUS_FOLDER_ID = "14OCM7eMv9NNuMlcIibk4cY3LCpBJNe-i"; // Folder: separation_agreements
@@ -98,11 +100,13 @@ function create_ccos()
 
       var sep_agmt_tmpl = curr[SEPARATION_AGREEMENT_TEMPLATE_CIDX]
       var adea_flag = curr[ADEA_FLAG_CIDX];
+      var L2 = curr[L2_CIDX];
       var L2_orgname = curr[L2_ORGNAME_CIDX];
       var california_flag = curr[CALIFORNIA_FLAG_CIDX];
+      var work_location = curr[WORK_LOCATION_CIDX];
 
       // Copy the template
-      var filename = sep_agmt_tmpl + " - " + adea_flag + " - " + L2_orgname + " - " + california_flag + " - " + full_legal_name + "(" + eeid + ")";
+      var filename = work_location + " - " + sep_agmt_tmpl + " - " + adea_flag + " - " + L2 + " - " + california_flag + " - " + full_legal_name + " (" + eeid + ")";
       var file_new_ee_doc = DriveApp.getFileById(CALIFORNIA_CHANGE_OF_STATUS_TMPL_ID).makeCopy(filename, folder);
 
       // Fil-in copy with employee details
