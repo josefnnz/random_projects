@@ -43,6 +43,7 @@ function create_separation_agreements()
   var RETENTION_FLAG_CIDX = 29 - 1;
   var L2_CIDX = 30 - 1;
   var WORK_LOCATION_CIDX = 31 - 1;
+  var IS_SEPARATION_DATE_IN_2017_CIDX = 32 = 1;
 
   // Separation Agreement Type to Template Google ID
   var mapping = {"CIC - NonWARN - NonTrans"  : "1O5kxLuWHw2nd_ZAyArt0HQ4gVqTuXnNt4KaXKyXXbGk",
@@ -131,6 +132,8 @@ function create_separation_agreements()
 
       var has_outstanding_retention_bonuses = curr[RETENTION_FLAG_CIDX] == "RET";
 
+      var is_separation_date_in_2017 = curr[IS_SEPARATION_DATE_IN_2017_CIDX] == "Y";
+
       var sep_agmt_tmpl = curr[SEPARATION_AGREEMENT_TEMPLATE_CIDX]
       var adea_flag = curr[ADEA_FLAG_CIDX];
       var L2 = curr[L2_CIDX];
@@ -178,17 +181,23 @@ function create_separation_agreements()
         delete_section_tag(body, "<<corporate_bonus_section_block>>");      
         delete_section_block(body, "<<sales_bonus_section_block>>");
         delete_section_block(body, "<<seip_bonus_section_block>>");
+        if (is_separation_date_in_2017)
+        {
+          delete_section_block(body, "<<2017_corporate_bonus_section_block>>");
+        }
       }
       else if (has_sales_nonseip_bonus_plan)
       {
         delete_section_tag(body, "<<sales_bonus_section_block>>");
         delete_section_block(body, "<<corporate_bonus_section_block>>");
+        delete_section_block(body, "<<2017_corporate_bonus_section_block>>");
         delete_section_block(body, "<<seip_bonus_section_block>>");
       }
       else if (has_seip_bonus_plan)
       {
         delete_section_tag(body, "<<seip_bonus_section_block>>");
         delete_section_block(body, "<<corporate_bonus_section_block>>");
+        delete_section_block(body, "<<2017_corporate_bonus_section_block>>");
         delete_section_block(body, "<<sales_bonus_section_block>>");
       }
 
