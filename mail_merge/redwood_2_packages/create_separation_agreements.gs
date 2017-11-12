@@ -39,7 +39,7 @@ function create_separation_agreements()
   var CIC_PLAN_SALARY_CONTINUATION_MONTHS_MINUS_NOTICE_PERIOD_CIDX = 25 - 1;
   var CIC_PLAN_NUM_MONTHS_OF_COBRA_CIDX = 26 - 1;
   var TRANSITION_BONUS_AMOUNT_CIDX = 27 - 1;
-  var OAB_OR_SIP_CIDX = 28 - 1;
+  var OAB_OR_SIP_OR_SEIP_CIDX = 28 - 1;
   var RETENTION_FLAG_CIDX = 29 - 1;
   var L2_CIDX = 30 - 1;
   var WORK_LOCATION_CIDX = 31 - 1;
@@ -124,9 +124,11 @@ function create_separation_agreements()
       var oath_weeks_of_base_compensation = curr[OATH_PLAN_NUM_WEEKS_OF_BASE_COMP_PAYOUT_CIDX];
       var cic_plan_months_of_cobra_coverage = curr[CIC_PLAN_NUM_MONTHS_OF_COBRA_CIDX];
       var oath_plan_months_of_cobra_coverage = curr[OATH_PLAN_NUM_MONTHS_OF_COBRA_CIDX];
-      var oab_or_sip_bonus_plan = curr[OAB_OR_SIP_CIDX];
-      var has_nonsales_bonus_plan = oab_or_sip_bonus_plan == "OAB";
-      var has_sales_bonus_plan = oab_or_sip_bonus_plan == "SIP";
+      var oab_or_sip_seip_bonus_plan = curr[OAB_OR_SIP_OR_SEIP_CIDX];
+      var has_nonsales_bonus_plan = oab_or_sip_seip_bonus_plan == "OAB";
+      var has_sales_nonseip_bonus_plan = oab_or_sip_seip_bonus_plan == "SIP";
+      var has_seip_bonus_plan = oab_or_sip_seip_bonus_plan == "SEIP";
+
       var has_outstanding_retention_bonuses = curr[RETENTION_FLAG_CIDX] == "RET";
 
       var sep_agmt_tmpl = curr[SEPARATION_AGREEMENT_TEMPLATE_CIDX]
@@ -175,11 +177,19 @@ function create_separation_agreements()
       {
         delete_section_tag(body, "<<corporate_bonus_section_block>>");      
         delete_section_block(body, "<<sales_bonus_section_block>>");
+        delete_section_block(body, "<<seip_bonus_section_block>>");
       }
-      else if (has_sales_bonus_plan)
+      else if (has_sales_nonseip_bonus_plan)
       {
         delete_section_tag(body, "<<sales_bonus_section_block>>");
         delete_section_block(body, "<<corporate_bonus_section_block>>");
+        delete_section_block(body, "<<seip_bonus_section_block>>");
+      }
+      else if (has_seip_bonus_plan)
+      {
+        delete_section_tag(body, "<<seip_bonus_section_block>>");
+        delete_section_block(body, "<<corporate_bonus_section_block>>");
+        delete_section_block(body, "<<sales_bonus_section_block>>");
       }
 
       if (has_outstanding_retention_bonuses)
