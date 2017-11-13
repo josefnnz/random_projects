@@ -43,7 +43,7 @@ function create_separation_agreements()
   var RETENTION_FLAG_CIDX = 29 - 1;
   var L2_CIDX = 30 - 1;
   var WORK_LOCATION_CIDX = 31 - 1;
-  var IS_SEPARATION_DATE_IN_2017_CIDX = 32 = 1;
+  var IS_SEPARATION_DATE_IN_2017_CIDX = 32 - 1;
 
   // Separation Agreement Type to Template Google ID
   var mapping = {"CIC - NonWARN - NonTrans"  : "1O5kxLuWHw2nd_ZAyArt0HQ4gVqTuXnNt4KaXKyXXbGk",
@@ -83,7 +83,7 @@ function create_separation_agreements()
 
   // Identify total number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 31; // Columns A - AC
+  var NUM_COLS_TO_EXTRACT = 32; // Columns A - AF
 
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = ees.getRange(FIRST_ROW_EXTRACTED, 1, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
