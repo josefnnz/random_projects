@@ -184,6 +184,10 @@ function create_separation_agreements()
         if (is_separation_date_in_2017)
         {
           delete_section_block(body, "<<2017_corporate_bonus_section_block>>");
+        } 
+        else
+        {
+          delete_section_tag(body, "<<2017_corporate_bonus_section_block>>");
         }
       }
       else if (has_sales_nonseip_bonus_plan)
