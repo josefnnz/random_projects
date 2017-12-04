@@ -85,22 +85,25 @@ ranges.loc[:, 'cgp_s2_top'] = ranges.loc[:, 'cgp_mid']
 ranges.loc[:, 'cgp_s3_top'] = (ranges.loc[:, 'cgp_mid'] + ranges.loc[:, 'cgp_max']) / 2
 ranges.loc[:, 'cgp_s4_top'] = ranges.loc[:, 'cgp_max']
 
+# Extract unique Comp Grades
 unique_grades = ranges.loc[ranges.loc[:, 'grade'].notnull(), 'grade']
 unique_grades.drop_duplicates(inplace=True)
 # unique_grades = unique_grades.reindex_axis(labels=None, axis=0)
 
+# Extract unique Comp Grade Profiles
 unique_cgps = ranges.loc[ranges.loc[:, 'cgp'].notnull(), 'cgp']
 unique_cgps.drop_duplicates(inplace=True)
 # unique_cgps = unique_cgps.reindex_axis(labels=None, axis=0)
 
 NUM_UNIQUE_GRADES, NUM_UNIQUE_CGPS, NUM_REQUIRED_COLS = unique_grades.shape[0], unique_cgps.shape[0], 43
-indices = pandas.DataFrame(range(NUM_UNIQUE_GRADES))
+# indices = pandas.DataFrame(range(NUM_UNIQUE_GRADES))
 eib = pandas.DataFrame(index=range(NUM_UNIQUE_GRADES*NUM_UNIQUE_CGPS), columns=range(NUM_REQUIRED_COLS))
-i = 1
+i = 0
 for g in unique_grades:
-    new_row = create_row_for_grade(g, i+1, "Y", comp_element="Standard_Base_Pay")
-    shift = i+i*NUM_UNIQUE_CGPS
-    eib.iloc[range(0+shift, NUM_UNIQUE_CGPS+shift), :] = new_row
+    print g
+    new_row = create_row_for_grade(g, i, "Y", comp_element="Standard_Base_Pay")
+    shift = i*NUM_UNIQUE_CGPS
+    eib.iloc[range(0+shift, 29+shift), :] = new_row
     i += 1
 
 writer = pandas.ExcelWriter('test.xlsx')
