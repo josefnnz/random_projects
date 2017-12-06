@@ -183,14 +183,10 @@ create_eib_for_comp_structure = function(struct)
 create_unique_sskeys_for_consolidated_eib = function(eib)
 {
   keys = eib[["sskey"]]
-  k = 1
-  for (i in 1:length(keys))
+  num_unique_keys_needed = length(keys) / NUM_COMP_GRADE_PROFILES
+  for (i in 1:num_unique_keys_needed)
   {
-    if (keys[i] != "")
-    {
-      keys[i] = k
-      k = k + 1
-    }
+    keys[1:NUM_COMP_GRADE_PROFILES+((i-1)*NUM_COMP_GRADE_PROFILES)] = i
   }
   eib[["sskey"]] = keys
   return(eib)
