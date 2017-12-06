@@ -102,7 +102,7 @@ create_row_for_grade = function(grade, sskey, addonly, comp_element="Standard_Ba
   entry = data.frame(matrix("",nrow=NUM_COMP_GRADE_PROFILES,ncol=NUM_ALL_EIB_FIELDS),stringsAsFactors=FALSE)
   names(entry) = ALL_EIB_COLUMNS
 
-  entry[["sskey"]][1] = sskey
+  entry[["sskey"]] = sskey
   entry[["grade_addonly"]][1] = addonly
   # entry[["grade"]][1] = grade
   entry[["grade_id"]][1] = grade
@@ -210,7 +210,10 @@ for (s in comp_structures)
 }
 
 eib_with_all_structures = create_consolidated_eib(all_eib_data)
-write.xlsx2(eib_with_all_structures, "test.xlsx", "Compensation Grade", col.names=TRUE, row.names=FALSE, append=FALSE, showNA=FALSE)
+
+DATETIMESTAMP = format(Sys.time(),"%Y-%m-%d %H_%M PDT")
+filename = paste0("EIB - Put_Comp_Grade - ",DATETIMESTAMP,".xlsx")
+write.xlsx2(eib_with_all_structures, file=filename, sheetName="Compensation Grade", col.names=TRUE, row.names=FALSE, append=FALSE, showNA=FALSE)
 
 
 
