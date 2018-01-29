@@ -107,7 +107,7 @@ function sendNonOvpEmails()
         message = message.replace("DENIAL_REASON", L2_denial_reason);
         subject = subject.replace("EMPLOYEE_PREFERRED_NAME", nominee);
        
-        MailApp.sendEmail("josefnunez@oath.com", subject, message, {
+        MailApp.sendEmail(mgr_email, subject, message, {
           htmlBody: message,
           bcc: "josefnunez@oath.com"
         });
