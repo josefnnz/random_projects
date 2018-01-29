@@ -7,13 +7,8 @@ function sendNonOvpEmails()
   var TMPL_DENIED_PROMO_WITH_REASON = "1h2omPaNzF5N58WEFl52osoEBZMw7JRqBFhGHiUJUmmU";
   var TMPL_DENIED_PROMO_WITHOUT_REASON = "1GZllGJX7slzShCXytc-4eTgEfI0LSAmT26tSBQUR67o";
 
-  var FIRST_ROW_OF_DATA = 5;
   var FIRST_COL_OF_DATA = 1;
-  var LAST_ROW_OF_DATA = 5;
   var LAST_COL_OF_DATA = 9;
-
-  var NUM_ROWS = LAST_ROW_OF_DATA - FIRST_ROW_OF_DATA + 1;
-  var NUM_COLS = LAST_COL_OF_DATA - FIRST_COL_OF_DATA + 1;
 
   // Column indices
   var L2_DECISION_CIDX = 1 - 1;
@@ -47,10 +42,7 @@ function sendNonOvpEmails()
   }
 
   function sendEmails() 
-  {
-    // Load sheet with nominated Non-OVP promotions
-    var sheet = SpreadsheetApp.openById(SSID_MASS_EMAIL_GENERATOR).getSheetByName(STNM_NON_OVP_EMAILS_TAB);
-   
+  {   
     var response = Browser.msgBox("You are about to send emails to EVERYONE ON SHEET " + STNM_NON_OVP_EMAILS_TAB + " (WHAAATTTT?????)."
                	+"Press OK if you are confident you wont break corpmail",Browser.Buttons.OK_CANCEL);
    
@@ -58,6 +50,14 @@ function sendNonOvpEmails()
    
     var response3 = Browser.msgBox("WOW....you are really persistent. last chance. are you really really really sure???",Browser.Buttons.OK_CANCEL);
    
+    // Load sheet with nominated Non-OVP promotions
+    var sheet = SpreadsheetApp.openById(SSID_MASS_EMAIL_GENERATOR).getSheetByName(STNM_NON_OVP_EMAILS_TAB);
+    var FIRST_ROW_OF_DATA = 1 * sheet.getSheetValues(1, 2, 1, 1);
+    var LAST_ROW_OF_DATA = 1 * sheet.getSheetValues(2, 2, 1, 1);
+
+    var NUM_ROWS = LAST_ROW_OF_DATA - FIRST_ROW_OF_DATA + 1;
+    var NUM_COLS = LAST_COL_OF_DATA - FIRST_COL_OF_DATA + 1;
+
     if (response == "ok" & response2 == "ok" & response3 == "ok") 
     {
       // Get HTML for email templates
