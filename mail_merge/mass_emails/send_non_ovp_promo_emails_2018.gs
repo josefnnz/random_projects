@@ -49,7 +49,7 @@ function sendNonOvpEmails()
   function sendEmails() 
   {   
     var response = Browser.msgBox("You are about to send emails to EVERYONE ON SHEET " + STNM_NON_OVP_EMAILS_TAB + " (WHAAATTTT?????)."
-               	+"Press OK if you are confident you wont break corpmail",Browser.Buttons.OK_CANCEL);
+                +"Press OK if you are confident you wont break corpmail",Browser.Buttons.OK_CANCEL);
    
     var response2 = Browser.msgBox("are you sure you're really sure? if yes, press ok. if no, press cancel and do a dance...you saved corpmail!",Browser.Buttons.OK_CANCEL);
    
@@ -72,12 +72,12 @@ function sendNonOvpEmails()
       var subject_line_approved_promo = "Promotion Request for EMPLOYEE_PREFERRED_NAME Approved";
       var subject_line_denied_promo = "Promotion Request for EMPLOYEE_PREFERRED_NAME Denied";
 
-    	// Get list of nominees
-    	var data = sheet.getRange(FIRST_ROW_OF_DATA, FIRST_COL_OF_DATA, NUM_ROWS, NUM_COLS).getValues();
+      // Get list of nominees
+      var data = sheet.getRange(FIRST_ROW_OF_DATA, FIRST_COL_OF_DATA, NUM_ROWS, NUM_COLS).getValues();
 
-    	for (i = 0; i < data.length; i++) 
+      for (i = 0; i < data.length; i++) 
       {
-      	var row = data[i];
+        var row = data[i];
 
         var L2_decision = row[L2_DECISION_CIDX];
         var L2_denial_reason = row[L2_DENIAL_REASON_CIDX];
@@ -115,13 +115,13 @@ function sendNonOvpEmails()
        
         MailApp.sendEmail(mgr_email, subject, message, {
           htmlBody: message,
-          bcc: "sanj@oath.com,paquino@oath.com,josefnunez@oath.com"
+          bcc: "paquino@oath.com,josefnunez@oath.com","sanj@oath.com"
         });
        
         // Write "EMAIL_SENT" in last column to confirm email delivery
         sheet.getRange(FIRST_ROW_OF_DATA+i, EMAIL_SEND_STATUS_CIDX+1).setValue(EMAIL_SENT);
         SpreadsheetApp.flush();
-    	}
+      }
     }
   }
 
