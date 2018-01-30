@@ -115,7 +115,7 @@ function sendNonOvpEmails()
        
         MailApp.sendEmail(mgr_email, subject, message, {
           htmlBody: message,
-          bcc: "paquino@oath.com,josefnunez@oath.com,sanj@oath.com"
+          bcc: "paquino@oath.com,sanj@oath.com"
         });
        
         // Write "EMAIL_SENT" in last column to confirm email delivery
