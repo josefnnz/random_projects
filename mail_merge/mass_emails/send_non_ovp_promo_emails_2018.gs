@@ -18,8 +18,13 @@ function sendNonOvpEmails()
   var MGR_FULL_NAME_CIDX = 5 - 1;
   var MGR_FIRST_NAME_CIDX = 6 - 1;
   var MGR_EMAIL_CIDX = 7 - 1;
-  var L2_CIDX = 8 - 1;
-  var EMAIL_SEND_STATUS_CIDX = 9 - 1;
+  var L2_FULL_NAME_CIDX = 8 - 1;
+  var L3_FULL_NAME_CIDX = 9 - 1;
+  var L3_EMAIL_CIDX = 10 - 1;
+  var HRBP_FULL_NAME_CIDX = 11 - 1;
+  var HRBP_EMAIL_CIDX = 12 - 1;
+  var CC_LINE_CIDX = 13 - 1;
+  var EMAIL_SEND_STATUS_CIDX = 14 - 1;
 
   // Constants
   var L2_APPROVE_DECISION_VALUE = "YES";
@@ -79,7 +84,8 @@ function sendNonOvpEmails()
         var nominee = row[NOMINEE_FULL_NAME_CIDX];
         var mgr_first_name = row[MGR_FIRST_NAME_CIDX];
         var mgr_email = row[MGR_EMAIL_CIDX];
-        var L2_name = row[L2_CIDX];
+        var L2_name = row[L2_FULL_NAME_CIDX];
+        // var cc_line = row[CC_LINE_CIDX];
 
         var message = null;
         var subject = null;
@@ -109,7 +115,7 @@ function sendNonOvpEmails()
        
         MailApp.sendEmail(mgr_email, subject, message, {
           htmlBody: message,
-          bcc: "josefnunez@oath.com"
+          bcc: "sanj@oath.com,paquino@oath.com,josefnunez@oath.com"
         });
        
         // Write "EMAIL_SENT" in last column to confirm email delivery
