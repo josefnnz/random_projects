@@ -195,9 +195,15 @@ function create_stmts()
           paragraphs[i+2].removeFromParent();
           paragraphs[i+3].removeFromParent();
         }
-        if ((para.findText("Except as required by local or regional law") && !is_non_usa) || (para.findText("Reflects target value of your Verizon equity award on the grant date") && !is_awarded_equity))
+        if (para.findText("Except as required by local or regional law") && !is_non_usa)
         {          
-          // Remove non-USA legal footnote if employee is located in the USA. Remove equity footnote if employee is not receiving equity
+          // Remove non-USA legal footnote if employee is located in the USA. Remove extra line break below as well to pull up the rest of the footnotes.
+          paragraphs[i].removeFromParent();
+          paragraphs[i+1].removeFromParent();
+        }
+        if (para.findText("Reflects target value of your Verizon equity award on the grant date") && !is_awarded_equity)
+        {
+          // Remove equity footnote if employee is not receiving equity. No need to remove line below footnote because equity is the last footnote.
           para.removeFromParent();
         }
       }
