@@ -181,12 +181,6 @@ function create_stmts()
       for (var i = 0; i < paragraphs.length; i++)
       {
         para = paragraphs[i];
-        if (para.findElement(DocumentApp.ElementType.PAGE_BREAK))
-        {
-          // Exit for loop once Page Break is found
-          page_break_index = i;
-          break;
-        }
         if ((para.findText("PROMOTION INFORMATION") && !is_promo) || (para.findText("EQUITY AWARD INFORMATION") && !is_awarded_equity))
         {
           // Remove promotion/equity section lines if employee is not receiving a promotion/equity
@@ -205,6 +199,12 @@ function create_stmts()
         {
           // Remove equity footnote if employee is not receiving equity. No need to remove line below footnote because equity is the last footnote.
           para.removeFromParent();
+        }
+        if (para.findElement(DocumentApp.ElementType.PAGE_BREAK))
+        {
+          // Exit for loop once Page Break is found
+          page_break_index = i;
+          break;
         }
       }
 
@@ -271,6 +271,11 @@ function create_stmts()
       // Save gdoc as pdf in the corresponding Region + L2 folder
       var pdf_version = target_folder.createFile(file_tmpl_copy.getAs("application/pdf"));
       pdf_version.setName(filename);
+
+      // Write unique URL for new file and the folder holding new file
+      sheet_ees.getRange(row+FIRST_ROW_EXTRACTED, 1, 1, 1).setValue("https://drive.google.com/a/oath.com/file/d/" + pdf_version.getId() + "/view?usp=sharing");
+      sheet_ees.getRange(row+FIRST_ROW_EXTRACTED, 2, 1, 1).setValue("https://drive.google.com/drive/folders/" + target_folder.getId());
+      SpreadsheetApp.flush();
     }
   }
   mail_merge();
