@@ -26,7 +26,7 @@ function create_stmts()
 
   // Identify number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 40; // Columns C to AP
+  var NUM_COLS_TO_EXTRACT = 42; // Columns C to AR
 
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = sheet_ees.getRange(FIRST_ROW_EXTRACTED, 3, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
