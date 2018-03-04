@@ -157,83 +157,63 @@ function create_stmts()
       var table_base_ttc = tables[1];
       var tables_equity = tables[2];
       var tablerow_hourly_rates = table_base_ttc.getRow(4); // Get row with hourly rates
-      var header_promo = body.findText("PROMOTION INFORMATION").getElement();
-      var header_base_ttc = body.findText("TOTAL TARGET CASH").getElement();
-      var header_equity = body.findText("EQUITY AWARD INFORMATION").getElement();
-      var range_element_horizontal_rule_promo = body.findElement(DocumentApp.ElementType.HORIZONTAL_RULE);
-      var range_element_horizontal_rule_base_ttc = body.findElement(DocumentApp.ElementType.HORIZONTAL_RULE, range_element_horizontal_rule_promo);
-      var range_element_horizontal_rule_equity = body.findElement(DocumentApp.ElementType.HORIZONTAL_RULE, range_element_horizontal_rule_base_ttc);
-      var element_horizontal_rule_promo = range_element_horizontal_rule_promo.getElement();
-      var element_horizontal_rule_base_ttc = range_element_horizontal_rule_base_ttc.getElement();
-      var element_horizontal_rule_equity = range_element_horizontal_rule_equity.getElement();
-      var footnote_non_usa_bonus_equity = body.findText("Except as required by local or regional law").getElement(); // Get non-USA footnote
-      var footnote_equity = body.findText("Reflects target value of your Verizon equity award on the grant date").getElement(); // Get equity footnote
 
+      // Remove not applicable tables from statement. Important to remove tables so they convert from Tables to empty Paragraphs on gdoc.
       if (!is_promo)
       {
-        // Remove promotion section if employee is not receiving a promotion
-        header_promo.removeFromParent();
-        element_horizontal_rule_promo.removeFromParent();
+        // Remove promotion table if employee is not receiving a promotion
         table_promo.removeFromParent();
       }
-
       if (!is_hourly)
       {
         // Remove row of hourly rates in Base/TTC section if employee is not an hourly employee
         tablerow_hourly_rates.removeFromParent();
       }
-
       if (!is_awarded_equity)
       {
-        // Remove equity section if employee is not receiving equity
-        header_equity.removeFromParent();
-        element_horizontal_rule_equity.removeFromParent();
+        // Remove equity table if employee is not receiving equity
         tables_equity.removeFromParent();
-        footnote_equity.removeFromParent();
       }
 
-      if (!is_non_usa)
-      {
-        // Remove non-USA legal footnote if employee is located in the USA
-        footnote_non_usa_bonus_equity.removeFromParent();
-      }
-
+      // Remove not applicable sections, footnotes, and lines from statement
       var paragraphs = body.getParagraphs();
-      
-      for (var k = 0, line_breaks = 0; k < paragraphs.length; k++)
+      var page_break_index = null;
+      for (var i = 0; i < paragraphs.length; i++)
       {
-        if (paragraphs[k].findElement(DocumentApp.ElementType.PAGE_BREAK))
+        para = paragraphs[i];
+        if (para.findElement(DocumentApp.ElementType.PAGE_BREAK))
         {
+          // Exit for loop once Page Break is found
+          page_break_index = i;
           break;
         }
-        if(paragraphs[k].getText() !== "") 
+        if ((para.findText("PROMOTION INFORMATION") && !is_promo) || (para.findText("EQUITY AWARD INFORMATION") && !is_awarded_equity))
         {
-          line_breaks = 0;
-        } 
-        else 
-        {
-          if (line_breaks === 0) 
-          {
-            line_breaks++;
-          } 
-          else if (!paragraphs[k].isAtDocumentEnd()) 
-          {
-              paragraphs[k].removeFromParent();
-          }
+          // Remove promotion/equity section lines if employee is not receiving a promotion/equity
+          paragraphs[i].removeFromParent();
+          paragraphs[i+1].removeFromParent();
+          paragraphs[i+2].removeFromParent();
+          paragraphs[i+3].removeFromParent();
+        }
+        if ((para.findText("Except as required by local or regional law") && !is_non_usa) || (para.findText("Reflects target value of your Verizon equity award on the grant date") && !is_awarded_equity))
+        {          
+          // Remove non-USA legal footnote if employee is located in the USA. Remove equity footnote if employee is not receiving equity
+          para.removeFromParent();
         }
       }
 
+      // Remove the legal employment agreement if employee is in the USA
       if (!is_non_usa)
       {
-        for (k; k<paragraphs.length; k++)
+        for (var j = page_break_index; j < paragraphs.length; j++)
         {
-          if (!paragraphs[k].isAtDocumentEnd())
+          if (!paragraphs[j].isAtDocumentEnd())
           {
-            paragraphs[k].removeFromParent();
+            paragraphs[j].removeFromParent();
           }
         }
       }
-
+      
       // Merge data fields in statement, as applicable
       body.replaceText("<<EMPLOYEE_FULL_PREFERRED_NAME>>", ee_preferred_full_name);
       body.replaceText("<<EMPLOYEE_ID>>", eeid);
