@@ -2,20 +2,20 @@ function create_stmts()
 {
 
   // Confirm user wants to run script
-  // var ui = SpreadsheetApp.getUi();
-  // var response = ui.alert("Please check cells B1, B3, and B4 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
-  // if (response !== ui.Button.OK) {
-  //  return;
-  // }
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert("Please check cells B1 and B2 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to prevent the script from running.", ui.ButtonSet.OK_CANCEL);
+  if (response !== ui.Button.OK) {
+   return;
+  }
 
   // Google file ids
-  var FOLDER_ID = "1bCOwYnMfd6LqumpBVKhcZF02UOClFoKk"; // Folder: 
+  var BACKUP_GDOCS_FOLDER_ID = "1D6iyw3fPMVo6Erep3PZlQ4WfzPx6p1bm"; // Folder: 
   var TMPL_ID = "1ipPSqP08lenNyRFAYHkJfaqHKYRyLLHydk-H24aDLLc"; // Template: 
   var SSID = "1xTNM6Od7GA39UQagU659fLB4Mluau8_RyLlVSK-7CGw"; // Spreadsheet: 
   var SHN = "create_stmts"; // Sheet Name: 
 
   // Get folder
-  var folder = DriveApp.getFolderById(FOLDER_ID);
+  var backup_gdocs_folder = DriveApp.getFolderById(BACKUP_GDOCS_FOLDER_ID);
 
   // Get sheet
   var sheet_ees = SpreadsheetApp.openById(SSID).getSheetByName(SHN);
@@ -78,6 +78,24 @@ function create_stmts()
   var SIGNATURE_NAME_CIDX = 41 - 1;
   var LEGAL_ENTITY_CIDX = 42 - 1;
 
+  // Create mapping of Region + L2 to Folder ID. Statements will be saved in regional L2 folders.
+  var region_L2_folder_ids = {"EMEA - Allie Kline" : "1DlsDzzIkB5tZ-sjT1a__7HBweiO-koRg",
+                              "EMEA - Atte Lahtiranta" : "1oeRVR_pMCzOmgeA2OkNIVJyzNV1t2XJW",
+                              "EMEA - Bob Toohey" : "1uXsHKa3sUuUAHOMYyHxYZpWgNhGSFclS",
+                              "EMEA - John DeVine" : "10C27d1ZpZ9rLa48PBVgjr6o74mz_rYjm",
+                              "EMEA - Julie Jacobs" : "10viqPfwwcsGoW0b47jzvUhw-HOdszFrr",
+                              "EMEA - Rohit Chandra" : "1iwaqAEbjgK4rpgp9NRKzMFSHU_--DVA-",
+                              "EMEA - Simon Khalaf" : "1PtDT2Qf03gOa9TWILe4pRJAKF_e6JtQg",
+                              "EMEA - Vanessa Wittman" : "1MdA-3q3Hd3nf9iz5XNLVcIvmDNx3jSi5",
+                              "NonEMEA - Allie Kline" : "1xR14p8rcEWdhrCUsYoDo0HUnVEDdbzCZ",
+                              "NonEMEA - Jeffrey Bonforte" : "1w_smks3K83smkzRyHIjfxtHCoP2_4Wow",
+                              "NonEMEA - John DeVine" : "1VmWu9zjarAgWtA1R_NMEBawRmFqizG33",
+                              "NonEMEA - Julie Jacobs" : "1uUopRThBuVxoqKF6udbNjPnheS5ZzdM5",
+                              "NonEMEA - Ralf Jacob" : "1Cf0jca4yunNI1P3A1FwNMnx8TOOhOoRA",
+                              "NonEMEA - Rohit Chandra" : "1pfVWaVDPYn-ttqgm43Q22ALaa72tXHOu",
+                              "NonEMEA - Simon Khalaf" : "1eBM4tk6hygTOFyH4Y7lnFRRuiun725Jx",
+                              "NonEMEA - Vanessa Wittman" : "1WRLqH8pxXhHiW5j0M89kkZz_Vc7vYEZW"}
+
   function mail_merge() 
   {
     for (var row = 0; row < NUM_EES; row++) 
@@ -88,6 +106,10 @@ function create_stmts()
       // Get required fields
       var ee_preferred_full_name = curr[PREFERRED_FULL_NAME_CIDX];
       var eeid = curr[EEID_CIDX];
+      var mgr_preferred_full_name = curr[MANAGER_PREFERRED_NAME_CIDX];
+      var mgr_work_email = curr[MANAGER_WORK_EMAIL_CIDX];
+      var emea_nonemea = (curr[WORK_LOCATION_REGION_CIDX].toLowerCase() === "EMEA".toLowerCase()) ? "EMEA" : "NonEMEA";
+      var L2 = curr[L2_CIDX];
       var is_promo = curr[IS_PROMO_CIDX] === "Y";
       var curr_job_profile = curr[CURRENT_JOB_PROFILE_CIDX];
       var curr_job_level = curr[CURRENT_JOB_LEVEL_CIDX];
@@ -113,21 +135,23 @@ function create_stmts()
       var overall_base_inc = curr[OVERALL_BASE_INC_CIDX];
       var is_awarded_equity = curr[IS_AWARDED_EQUITY_CIDX] === "Y";
       var equity_amt = curr[EQUITY_VALUE_CIDX];
-      var agmt_date = curr[EMPLOYMENT_AGMT_DATE_CIDX];
       var is_non_usa = curr[WORK_LOCATION_COUNTRY_CIDX].toLowerCase() !== "United States of America".toLowerCase()
       var legal_first_name = curr[LEGAL_FIRST_NAME_CIDX];
-      var hra_analyst = curr[HRA_RECEIVER_CIDX];
-      var return_date = curr[DATE_DEADLINE_TO_RETURN_EMPLOYMENT_AGMT_CIDX];
       var entity = curr[LEGAL_ENTITY_CIDX];
       var legal_full_name = curr[LEGAL_FULL_NAME_CIDX];
 
-      var filename = "TEST"
-      var file_tmpl_copy = DriveApp.getFileById(TMPL_ID).makeCopy(filename, folder)
+      // Get Google ID for Region+L2 folder to save statement into
+      var target_folder = DriveApp.getFolderById(region_L2_folder_ids[emea_nonemea + " - " + L2]);
 
+      // Create filename for statement
+      var filename = mgr_preferred_full_name + " (" + mgr_work_email + ") - Rewards Statement for " + ee_preferred_full_name + " (" + eeid + ")";
+
+      // Copy statement template gdoc. Open new copy.
+      var file_tmpl_copy = DriveApp.getFileById(TMPL_ID).makeCopy(filename, backup_gdocs_folder)
       var doc_tmpl_copy = DocumentApp.openById(file_tmpl_copy.getId());
       var body = doc_tmpl_copy.getBody();
 
-      // Get elements for Promo, Base/TTC, and Equity sections
+      // Get elements for Promo, Base/TTC, and Equity sections. Elements needed to remove inapplicable sections of statement.
       var tables = body.getTables();
       var table_promo = tables[0];
       var table_base_ttc = tables[1];
@@ -147,6 +171,7 @@ function create_stmts()
 
       if (!is_promo)
       {
+        // Remove promotion section if employee is not receiving a promotion
         header_promo.removeFromParent();
         element_horizontal_rule_promo.removeFromParent();
         table_promo.removeFromParent();
@@ -154,11 +179,13 @@ function create_stmts()
 
       if (!is_hourly)
       {
+        // Remove row of hourly rates in Base/TTC section if employee is not an hourly employee
         tablerow_hourly_rates.removeFromParent();
       }
 
       if (!is_awarded_equity)
       {
+        // Remove equity section if employee is not receiving equity
         header_equity.removeFromParent();
         element_horizontal_rule_equity.removeFromParent();
         tables_equity.removeFromParent();
@@ -167,6 +194,7 @@ function create_stmts()
 
       if (!is_non_usa)
       {
+        // Remove non-USA legal footnote if employee is located in the USA
         footnote_non_usa_bonus_equity.removeFromParent();
       }
 
@@ -195,22 +223,29 @@ function create_stmts()
         }
       }
 
-      for (k; k<paragraphs.length; k++)
+      if (!is_non_usa)
       {
-        if (!paragraphs[k].isAtDocumentEnd())
+        for (k; k<paragraphs.length; k++)
         {
-          paragraphs[k].removeFromParent();
+          if (!paragraphs[k].isAtDocumentEnd())
+          {
+            paragraphs[k].removeFromParent();
+          }
         }
       }
 
-
+      // Merge data fields in statement, as applicable
       body.replaceText("<<EMPLOYEE_FULL_PREFERRED_NAME>>", ee_preferred_full_name);
       body.replaceText("<<EMPLOYEE_ID>>", eeid);
-      body.replaceText("<<PROMO_EFFECTIVE_DATE>>", merit_eff_date);
-      body.replaceText("<<CURRENT_JOB_PROFILE>>", curr_job_profile);
-      body.replaceText("<<CURRENT_JOB_LEVEL>>", curr_job_level);
-      body.replaceText("<<NEW_JOB_PROFILE>>", new_job_profile);
-      body.replaceText("<<NEW_JOB_LEVEL>>", new_job_level);
+      if (is_promo)
+      {
+        // Merge in data specific to an employee receiving a promotion
+        body.replaceText("<<PROMO_EFFECTIVE_DATE>>", merit_eff_date);
+        body.replaceText("<<CURRENT_JOB_PROFILE>>", curr_job_profile);
+        body.replaceText("<<CURRENT_JOB_LEVEL>>", curr_job_level);
+        body.replaceText("<<NEW_JOB_PROFILE>>", new_job_profile);
+        body.replaceText("<<NEW_JOB_LEVEL>>", new_job_level);  
+      }
       body.replaceText("<<BASE_TTC_EFFECTIVE_DATE>>", merit_eff_date);
       body.replaceText("<<SALARY_DEC>>", salary_dec);
       body.replaceText("<<BONUS_PCT_DEC>>", bonus_pct_dec);
@@ -228,106 +263,29 @@ function create_stmts()
       body.replaceText("<<BASE_PCT_INC_MERIT>>", base_pct_inc_merit);
       body.replaceText("<<MAKE_WHOLE>>", make_whole_inc);
       body.replaceText("<<OVERALL_BASE_INC>>", overall_base_inc);
-      body.replaceText("<<EQUITY_VALUE>>", equity_amt);
-      body.replaceText("<<EMPLOYMENT_AGMT_DATE>>", agmt_date);
-      body.replaceText("<<LEGAL_FIRST_NAME>>", legal_first_name);
-      body.replaceText("<<SALARY_JAN>>", salary_jan);
-      body.replaceText("<<BONUS_PCT_DEC>>", bonus_pct_dec);
-      body.replaceText("<<BONUS_PCT_JAN>>", bonus_pct_jan);
-      body.replaceText("<<HRA_ANALYST>>", hra_analyst);
-      body.replaceText("<<RETURN_DATE>>", return_date);
-      body.replaceText("<<ENTITY_NAME>>", entity);
-      body.replaceText("<<LEGAL_FULL_NAME>>", legal_full_name);
+      if (is_awarded_equity)
+      {
+        // Merge in data specific to an employee receiving equity
+        body.replaceText("<<EQUITY_VALUE>>", equity_amt);
+      }
+      if (is_non_usa)
+      {
+        // Merge in data specific to a non-USA employee receiving the legal employment agreement
+        body.replaceText("<<LEGAL_FIRST_NAME>>", legal_first_name);
+        body.replaceText("<<SALARY_JAN>>", salary_jan);
+        body.replaceText("<<BONUS_PCT_DEC>>", bonus_pct_dec);
+        body.replaceText("<<BONUS_PCT_JAN>>", bonus_pct_jan);
+        body.replaceText("<<ENTITY_NAME>>", entity);
+        body.replaceText("<<LEGAL_FULL_NAME>>", legal_full_name);
+      }
+
+      // Save completed gdoc into backup folder of gdocs
       doc_tmpl_copy.saveAndClose();
 
-      // Save gdoc as pdf. Delete gdoc.
-      var pdf_version = folder.createFile(file_tmpl_copy.getAs("application/pdf"));
+      // Save gdoc as pdf in the corresponding Region + L2 folder
+      var pdf_version = target_folder.createFile(file_tmpl_copy.getAs("application/pdf"));
       pdf_version.setName(filename);
-
-      // // Only continue for CIC eligible employees
-      // var is_eligible_for_cic = curr[CIC_ELIGIBILITY_FLAG_CIDX];
-      // if (is_eligible_for_cic) 
-      // {
-      //   // Extract required fields
-      //   var eeid = curr[EEID_CIDX];
-      //   var legal_first_name = curr[LEGAL_FIRST_NAME_CIDX];
-      //   var legal_last_name = curr[LEGAL_LAST_NAME_CIDX];
-      //   var full_legal_name = legal_first_name + " " + legal_last_name;
-      //   var last_day_of_work = Utilities.formatDate(curr[LAST_DAY_OF_WORK_CIDX], Session.getScriptTimeZone(), "MMMMM d, yyyy"); 
-      //   var separation_date = Utilities.formatDate(curr[SEPARATION_DATE_CIDX], Session.getScriptTimeZone(), "MMMMM d, yyyy");
-      //   var cobra_mths = curr[COBRA_MTHS_CIDX];
-      //   var salary_cont_mths = curr[SALARY_CONT_MTHS_CIDX];
-      //   var severance_cont_mths = curr[SEVERANCE_CONT_MTHS_CIDX];
-      //   var trans_bonus_amt = curr[TRANS_BONUS_AMT_CIDX];
-      //   var is_ee_with_transition = (trans_bonus_amt) ? true : false;
-      //   var oath_L2 = curr[OATH_L2_CIDX];
-      //   var address_line_1 = curr[ADDRESS_LINE_1_CIDX];
-      //   var address_line_2 = curr[ADDRESS_LINE_2_CIDX];
-      //   var address_line_3 = curr[ADDRESS_LINE_3_CIDX];        
-      //   var usa_state = curr[USA_STATE_ISO_CODE_CIDX];
-      //   var adea_flag = (curr[ADEA_FLAG_CIDX]) ? "Over40" : "Under40";
-
-      //   // Copy the template
-      //   var filename = "TNRC - " + adea_flag + " - " + oath_L2 + " - " + usa_state + " - " + full_legal_name + " (" + eeid + ")";
-      //   //var filename = "TNRC - " + legal_last_name + "_" + legal_first_name + " - " + adea_flag + " - " + oath_L2 + " - " + usa_state + " (" + eeid + ")";
-      //   var TERM_NOTICE_TEMPLATE_ID = (is_ee_with_transition) ? TERM_NOTICE_TRANSITION_TEMPLATE_ID : TERM_NOTICE_NON_TRANSITION_TEMPLATE_ID;
-      //   var file_new_ee_doc = DriveApp.getFileById(TERM_NOTICE_TEMPLATE_ID).makeCopy(filename, folder);
-      
-      //   // Fill-in copy with employee details
-      //   var doc_new_ee_doc = DocumentApp.openById(file_new_ee_doc.getId());
-      //   var body = doc_new_ee_doc.getBody();
-
-      //   body.replaceText("<<today>>", DATE_OF_AGREEMENT);
-      //   body.replaceText("<<full_legal_name>>", full_legal_name);
-      //   body.replaceText("<<address_line_1>>", address_line_1); //NEEDTOUPDATE
-      //   if (address_line_2)
-      //   {
-      //     body.replaceText("<<address_line_2>>", address_line_2); //NEEDTOUPDATE
-      //     body.replaceText("<<address_line_3>>", address_line_3);
-      //   } 
-      //   else
-      //   {
-      //     body.replaceText("<<address_line_2>>", address_line_3); //NEEDTOUPDATE
-      //     body.replaceText("<<address_line_3>>", "");
-      //     // var rangeElement = body.findText("<<address_line_2>>");
-      //     // var startOffset = rangeElement.getStartOffset();
-      //     // var endOffset = rangeElement.getEndOffsetInclusive();
-      //     // rangeElement.getElement().asText().deleteText(startOffset, endOffset);
-      //   }
-      //   body.replaceText("<<address_line_3>>", address_line_3); //NEEDTOUPDATE
-      //   body.replaceText("<<legal_first_name>>", legal_first_name);
-      //   body.replaceText("<<last_day_of_work>>", last_day_of_work);
-      //   body.replaceText("<<separation_date>>", separation_date);
-      //   if (is_ee_with_transition) { body.replaceText("<<transition_bonus_amt>>", trans_bonus_amt); }
-      //   body.replaceText("<<continuation_months_minus_notice>>", severance_cont_mths);
-      //   body.replaceText("<<continuation_months_plus_notice>>", salary_cont_mths);
-      //   body.replaceText("<<cobra_months>>", cobra_mths);
-      //   doc_new_ee_doc.saveAndClose();
-      
-      //   // Save memo as pdf and delete Google Doc version
-      //   var pdf_version = folder.createFile(file_new_ee_doc.getAs("application/pdf"));
-      //   pdf_version.setName(filename);
-      //   file_new_ee_doc.setTrashed(true);
-      // }
     }
   }
   mail_merge();
 }
-
-// var promo_header = body.findText("PROMOTION INFORMATION").getElement();
-//       promo_header.removeFromParent();
-
-
-// var doc_tmpl_copy = DocumentApp.openById(file_tmpl_copy.getId());
-//       var body = doc_tmpl_copy.getBody();
-//       var promo_rule_range = body.findElement(DocumentApp.ElementType.HORIZONTAL_RULE);
-//       var promo_rule = promo_rule_range.getElement();
-//       var base_rule_range = body.findElement(DocumentApp.ElementType.HORIZONTAL_RULE, promo_rule_range);
-//       var base_rule = base_rule_range.getElement();
-//       var equity_rule_range = body.findElement(DocumentApp.ElementType.HORIZONTAL_RULE, base_rule_range);
-//       var equity_rule = equity_rule_range.getElement();
-//       promo_rule.removeFromParent(); // removes horizontal line
-//       base_rule.removeFromParent(); // removes horizontal line
-//       equity_rule.removeFromParent(); // removes horizontal line
-      
-//       body.findElement(DocumentApp.ElementType.PAGE_BREAK).getElement().removeFromParent(); // remove 2nd page
