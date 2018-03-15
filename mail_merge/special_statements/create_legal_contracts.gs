@@ -31,7 +31,7 @@ function create_legal_contracts()
 
   // Identify number of rows and columns to extract
   var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
-  var NUM_COLS_TO_EXTRACT = 11; // Columns B to K
+  var NUM_COLS_TO_EXTRACT = 13; // Columns A to M
 
   // Extract range of employee data starting with first employee row -- EXCLUDE HEADER ROWS
   var values_ees = sheet_ees.getRange(FIRST_ROW_EXTRACTED, FIRST_COL_EXTRACTED, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
@@ -51,6 +51,8 @@ function create_legal_contracts()
   var ENTITY_NAME_CIDX = 9 - 1;
   var LEGAL_FULL_NAME_CIDX = 10 - 1;
   var EEID_CIDX = 11 - 1;
+  var MGR_PREFERRED_NAME = 12 - 1;
+  var MGR_WORK_EMAIL = 13 - 1;
 
   function mail_merge() 
   {
@@ -70,9 +72,12 @@ function create_legal_contracts()
       var legal_entity = curr[ENTITY_NAME_CIDX];
       var legal_full_name = curr[LEGAL_FULL_NAME_CIDX];
       var eeid = curr[EEID_CIDX];
+      var mgr_name = curr[MGR_PREFERRED_NAME];
+      var mgr_email = curr[MGR_WORK_EMAIL];
+
 
       // Create filename for statement
-      var filename = "Change of Employment Terms for " + legal_full_name + " (" + eeid + ")";
+      var filename = mgr_name + " (" + mgr_email + ") - Change of Employment Terms for " + legal_full_name + " (" + eeid + ")";
 
       // Copy statement template gdoc. Open new copy.
       var file_tmpl_copy = DriveApp.getFileById(TMPL_ID).makeCopy(filename, backup_gdocs_folder)
