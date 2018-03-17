@@ -63,19 +63,19 @@ function create_request_compensation_change_eib()
   //       Issue because SS indices begin at 1. But Array column indices begin at 0.
   var EEID_CIDX = 1 - 1;
   var EFFECTIVE_DATE_CIDX = 2 - 1;
-  var SALARY_OR_HOURLY_PLAN_CIDX = 3 - 1;
-  var SALARY_OR_HOURLY_AMOUNT_CIDX = 4 - 1;
-  var LOCAL_CURRENCY_CIDX = 5 - 1;
-  var ANNUAL_OR_HOURLY_FREQUENCY_CIDX = 6 - 1;
-  var BONUS_PLAN_CIDX = 7 - 1;
-  var PERCENT_OR_AMOUNT_BASED_BONUS_PLAN_CIDX = 8 - 1;
-  var TARGET_BONUS_PERCENT_CIDX = 9 - 1;
-  var TARGET_BONUS_AMOUNT_CIDX = 10 - 1;
-  var IS_ON_INDIVIDUAL_TARGET_CIDX = 11 - 1;
+  var REQ_COMP_CHANGE_REASON_CODE_CIDX = 3 - 1;
+  var SALARY_OR_HOURLY_PLAN_CIDX = 4 - 1;
+  var SALARY_OR_HOURLY_AMOUNT_CIDX = 5 - 1;
+  var LOCAL_CURRENCY_CIDX = 6 - 1;
+  var ANNUAL_OR_HOURLY_FREQUENCY_CIDX = 7 - 1;
+  var BONUS_PLAN_CIDX = 8 - 1;
+  var PERCENT_OR_AMOUNT_BASED_BONUS_PLAN_CIDX = 9 - 1;
+  var TARGET_BONUS_PERCENT_CIDX = 10 - 1;
+  var TARGET_BONUS_AMOUNT_CIDX = 11 - 1;
+  var IS_ON_INDIVIDUAL_TARGET_CIDX = 12 - 1;
 
   // EIB Constants
   var NUM_COLS_IN_EIB = 82;
-  var REQ_COMP_CHANGE_REASON_CODE = "Request_Compensation_Compensation_Change_Salary_Adjustment";
 
   function create_full_eib()
   {
@@ -107,8 +107,8 @@ function create_request_compensation_change_eib()
     file_tml_cpy.setTrashed(true);   
 
     // Write unique URL for new EIB file in spreadsheet for easy reference
-    ees.getRange(3, 13, 1, 1).setValue(datetimestamp);
-    ees.getRange(4, 13, 1, 1).setValue("https://drive.google.com/file/d/"+excel_new_eib.getId()+"/view");
+    ees.getRange(3, 14, 1, 1).setValue(datetimestamp);
+    ees.getRange(4, 14, 1, 1).setValue("https://drive.google.com/file/d/"+excel_new_eib.getId()+"/view");
   }
   
   function create_eib_array() 
@@ -124,6 +124,7 @@ function create_request_compensation_change_eib()
       var sskey = row + 1;
       var eeid = add_leading_zeros(new String(curr[EEID_CIDX]), 6); // ensure EEID is 6 digits long
       var eff_date = curr[EFFECTIVE_DATE_CIDX];
+      var reason_code = curr[REQ_COMP_CHANGE_REASON_CODE_CIDX];
       var comp_plan = curr[SALARY_OR_HOURLY_PLAN_CIDX];
       var comp_plan_amt = curr[SALARY_OR_HOURLY_AMOUNT_CIDX];
       var currency = curr[LOCAL_CURRENCY_CIDX];
@@ -137,7 +138,7 @@ function create_request_compensation_change_eib()
       var individpct = (pct_or_amt_based == "Percent" && is_on_individ_tgt == "Y") ? tgt_bonus_pct : "";
       var pctassigned = (pct_or_amt_based == "Percent" && is_on_individ_tgt == "N") ? 1 : "";
 
-      eib_array.push(create_eib_row(sskey, eeid, eff_date, comp_plan, comp_plan_amt, currency, freq, bonus_plan, individamt, individpct, pctassigned)); 
+      eib_array.push(create_eib_row(sskey, eeid, eff_date, reason_code, comp_plan, comp_plan_amt, currency, freq, bonus_plan, individamt, individpct, pctassigned)); 
     }
     return eib_array;
   }
@@ -148,6 +149,7 @@ function create_request_compensation_change_eib()
    * @param sskey -- Spreadsheet Key
    * @param eeid -- Employee ID in 6 digit text format (i.e. has leading zeros)
    * @param effdate -- Effective Date of payment
+   * @param reason -- Request Compensation Change reason code
    * @param compplan -- Salary or Hourly plan
    * @param amt -- Annualized Base for Salaried EEs or Hourly Rate for Hourly EEs (values based on 100% FTE)
    * @param currency -- local currency
@@ -159,26 +161,36 @@ function create_request_compensation_change_eib()
    *
    * @return formatted array to fill EIB payment row with given details
    **/
-  function create_eib_row(sskey, eeid, effdate, compplan, amt, currency, freq, bonusplan, individamt, individpct, pctassigned)
+  function create_eib_row(sskey, eeid, effdate, reason, compplan, amt, currency, freq, bonusplan, individamt, individpct, pctassigned)
   {
     // https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
     var row = Array.apply(null, Array(NUM_COLS_IN_EIB)).map(String.prototype.valueOf, "");
     row[1] = sskey; // Spreadsheet Key*
     row[2] = eeid; // Employee*
     row[4] = effdate; // Compensation Change Date*
-    row[5] = REQ_COMP_CHANGE_REASON_CODE; //Reason*
-    row[11] = "Y"; // Replace
-    row[12] = "1"; // Row ID*
-    row[13] = compplan; // Pay Plan
-    row[14] = amt; // Amount*
-    row[17] = currency; // Currency
-    row[18] = freq; // Frequency
-    row[44] = "Y"; // Replace
-    row[45] = "1"; // Row ID*
-    row[46] = bonusplan; // Bonus Plan
-    row[47] = individamt; // Individual Target Amount
-    row[48] = individpct; // Individual Target Percent
-    row[50] = pctassigned; // Percent Assigned
+    row[5] = reason; //Reason*
+    // Base section
+    var is_there_a_base_change = compplan.trim() !== "";
+    if (is_there_a_base_change)
+    {
+      row[11] = "Y"; // Replace
+      row[12] = "1"; // Row ID*
+      row[13] = compplan; // Pay Plan
+      row[14] = amt; // Amount*
+      row[17] = currency; // Currency
+      row[18] = freq; // Frequency
+    }
+    // Bonus section
+    var is_there_a_bonus_change = bonusplan.trim() !== "";
+    if (is_there_a_bonus_change)
+    {
+      row[44] = "Y"; // Replace
+      row[45] = "1"; // Row ID*
+      row[46] = bonusplan; // Bonus Plan
+      row[47] = individamt; // Individual Target Amount
+      row[48] = individpct; // Individual Target Percent
+      row[50] = pctassigned; // Percent Assigned
+    }
     return row;
   }
 
