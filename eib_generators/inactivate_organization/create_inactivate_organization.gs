@@ -10,7 +10,7 @@ function create_inactivate_organization()
   // Google file ids
   var MAIN_FOLDER_ID = "1eOIlrL_PbWs6_s9AlN4dMW7xYSYSBFBr"; // Folder: 
   var DATA_SSID = "1lv3TDQnTgx5XgWOWJYavgodLIl-WXSU8awrzn7pNMuQ"; // File: 
-  var DATA_SHN = "GENERATE_EIB_TO_INACTIVATE_ORGS_HERE"; // Sheet with eeid, transition bonus amt, pmt amts, pay dates, etc.
+  var DATA_SHN = "GENERATE_INACTIVATE_ORGS_EIB"; // Sheet with eeid, transition bonus amt, pmt amts, pay dates, etc.
   var EIB_TML_SSID = "1ki9DyhaTI5XTCtk2bSoE4Qjos1OPa38sX7dDObstWNg"; // File: 
   var EIB_TML_SHN = "Organization Inactivate"; // 
 
@@ -44,6 +44,9 @@ function create_inactivate_organization()
 
   // EIB Constants
   var NUM_COLS_IN_EIB = 9;
+
+  // Constants
+  var TODAYS_DATE = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
 
   function create_full_eib()
   {
@@ -94,7 +97,7 @@ function create_inactivate_organization()
       var validate_only = "N";
       var system_id = "WD-WID";
       var id = curr[SUP_ORG_WID_CIDX];
-      var effective_date = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+      var effective_date = TODAYS_DATE;
       var keep_in_hierarchy = "N";
 
       eib_array.push(create_eib_row(sskey, validate_only, system_id, id, effective_date, keep_in_hierarchy)); 
