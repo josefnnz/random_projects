@@ -10,7 +10,7 @@ function create_change_sup_org_eib()
   // Google file ids
   var MAIN_FOLDER_ID = "1biWufWRpeZFVExDOX6knrOcTcprFmHS-"; // Folder: 
   var DATA_SSID = "1lv3TDQnTgx5XgWOWJYavgodLIl-WXSU8awrzn7pNMuQ"; // File: 
-  var DATA_SHN = "GENERATE_EIB_FOR_SUP_ORG_CHANGES_HERE"; // Sheet with eeid, transition bonus amt, pmt amts, pay dates, etc.
+  var DATA_SHN = "GENERATE_SUP_ORG_CHANGES_EIB"; // Sheet with eeid, transition bonus amt, pmt amts, pay dates, etc.
   var EIB_TML_SSID = "1hkhFGT5aphqbKJzZdXVtLWqjDFBsnlo4XUafLau3IzQ"; // File: 
   var EIB_TML_SHN = "Change Job"; // 
 
