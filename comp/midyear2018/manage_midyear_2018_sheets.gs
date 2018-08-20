@@ -64,14 +64,44 @@ function manage_midyear_2018_sheets()
     "GForce - 2018 Mid Year Promotions Tracker" : "99146c88756001d861a460dda9b0562e"
   }
 
+  // Promotion Tracker SSID to Importrange Key mapping
+  var trackerssid_to_importkey = 
+  {
+    "1c6JFbyBfHUD0haTtc6zSE1dhXig5VP5_QEF1FTCIgPQ" : "d23792434bda017203935434b94d33f2", // Alex Wallace
+    "1MfNvrvBp_QPrmRagbl8aEwdUcd9GlJHPngawTCMAteU" : "d23792434bda0141e4519e2eb94d80ed", // Atte Lahtiranta
+    "1SRO3Od-Iq7U0p8y8gcFZrd6lPsTxAgT29HUSPLgNP5U" : "d23792434bda016248bb7b2db94d84ec", // Brian Silver
+    "1iMomWFt-jrwTZwzhh9W2OyB8rXplsfNsAE_FA_T9k9g" : "d23792434bda010fc5b4691db94d0adf", // Bob Toohey
+    "1WsdJ_2VsPswIuZbKK3PsSiMah5F9lq4EMpiFv6VGuM0" : "d23792434bda01ba7a41391ab94d3ddc", // Dave McDowell
+    "1n67jUD57su6vXXqmr72wwUGqHOO2kPwq9wXuca5LSTw" : "d23792434bda01a0f6a57521b94da3e2", // Geoff Reiss
+    "1b58C_Wi4Fuy1zmJJfYZxqpxonBrHRbSbLn1phpvxGOM" : "04b33945885801cd8d9b6da4f5a065bb", // Guru Gowrappan
+    "1WbnJ-eGIQQBeVo9KRq4jrcoeuLzoRqTBtklPw5yviWc" : "d23792434bda01e23314a515b94d4ad8", // Jared Grusd
+    "148L3GYui1aTJ2l5SCoJR0aTvpXwywhi7NUdQRv_i-QM" : "d23792434bda012592125325b94d5ee5", // Jeff Bonforte
+    "13yRndGcT1EC0ijNm0tatPB39PoDg6hmLfwRgmlBdJ54" : "d23792434bda01fb84692d30b94d94ee", // Jeff D'Onofrio
+    "1f0JBZ3doLsm_v2Z_jort-yPJ4ZE7V9FSgBFtrU7bRBQ" : "3ba032e998ed01e00f10a848a9a45a95", // Jeff Lucas
+    "1TffDfytSNEXQwO17BoOv2rnyU9DsSOTsAs7-hIwBO3w" : "9446ef399a4801c8e87b9b7f3978b7bc", // Jen Vescio
+    "1m5NX5LKeUtnc9BCHhr31L-UJ1bKbQHSa_B6qyQ8DpK4" : "ea87f606fdcf01b9388bad82139cc43c", // Joanna Lambert
+    "1_BTRmFkEJ8OeTmt5X_Pn8wSBNe9_kNFzXA3U4_GYlLc" : "d23792434bda0191d9c77a12b94db9d5", // Julie Jacobs
+    "13dV2baMIHyRp7XrSd4rWiN_NWUY1wl2255H7F7_P8p0" : "d23792434bda01cdfac5a021b94dcae2", // Kelly Hirano
+    "1vy8I9NVd5FUGsStJdmS45nXXdZlC9_EXUbMWQN9snbc" : "d23792434bda01e657f3801ab94d7cdc", // Mark Roszkowski
+    "1pg-z39Qmc6LePGhwdjUkGLK8vu0z9ivjkN83Xt2pGdQ" : "d23792434bda01bdf6a49218b94dc6da", // Natalie Ravitz
+    "1tGird2vE4JjqAOOdCXGrOlwWP3ikCKC_E8kpC21rDqY" : "d23792434bda01c534757b24b94db3e4", // Rohit Chandra
+    "1q4Qgj0en069r8rLmStpd9nNhmWfVV8FR-9cO9kk988M" : "d23792434bda01d71e9c0923b94d8ae3", // Rose Tsou
+    "1csnJx2JdbKwRF5Z7OhKONLxnM5VsrSp4RdFDA8g56n8" : "d23792434bda01e8dec2431cb94d08de", // Stuart Flint
+    "15fV6uHR90KUOLNg1mdKmcp7lpJ0Ty4JMDaqIk7F2xk8" : "d23792434bda012e8aa60626b94d00e6", // Tenni Theurer
+    "1KzsvYmch5di65uXtw0NMXIo5F8Z_BqEFPOcXiBtvxEg" : "d23792434bda014edffa7016b94df2d8", // Tim Lemmon
+    "1Dp8AK94Htg5p4O0NE_IL_vO3oARVJ7Pnfopckptuzcg" : "d23792434bda01b9fb51311bb94d18dd", // Tim Mahlman
+    "1poHKAISGxLTmgMWRh16HVN_bSekl9OZ4bTWXHNna3aA" : "d23792434bda01c7662f741db94d13df", // Vanessa Wittman
+    "1HlIbSgnAexPfPvWJtLOS6B49FnRyrTWKc7eolnLtBPc" : "99146c88756001d861a460dda9b0562e"  // GForce
+  } 
+
   var TML_SSID_L2_L3_FILE = "1MKJ5DJv7sIcIe1GyqzhmdAgj53qZOA6iYSsrjHjZgBI";
   var SSID_PROMO_RESPONSES = "1H1qmum4XB4H-pz0W4RqFUghAGza--kdhQ1CUy5PBR6A";
   var FOLDER_ID_L2_L3_TRACKERS = "19c0UebDUC-aZlsQRZOL_0ywM1RrClKhK";
   var SHN_SR_MRG_AND_BELOW = "Sr Mgr and below";
-  var IR_RANGE_SR_MGR_AND_BELOW = "\"" + SHN_SR_MRG_AND_BELOW + "!A:L\"";
+  var IR_RANGE_SR_MGR_AND_BELOW = "\"" + SHN_SR_MRG_AND_BELOW + "!A:M\"";
   var IR_KEY_COL_INDEX_SR_MGR_AND_BELOW = "Col13";
   var SHN_DIR_AND_ABOVE = "Director and above";
-  var IR_RANGE_DIR_AND_ABOVE = "\"" + SHN_DIR_AND_ABOVE + "!A:M\"";
+  var IR_RANGE_DIR_AND_ABOVE = "\"" + SHN_DIR_AND_ABOVE + "!A:N\"";
   var IR_KEY_COL_INDEX_DIR_AND_ABOVE = "Col14";
 
   // Google file ids
@@ -92,8 +122,8 @@ function manage_midyear_2018_sheets()
     NUM_L2_L3_FILES = 25;
     for (var i = 0; i < NUM_L2_L3_FILES; i++)
     {
-      trackername = Object.keys(trackername_to_importkey)[i];
-      ir_key = trackername_to_importkey[trackername];
+      var trackername = Object.keys(trackername_to_importkey)[i];
+      var ir_key = trackername_to_importkey[trackername];
       var new_ssid = create_L2_L3_file(trackername, ir_key);
       sheet_lookuptable.getRange(i+2,4,1,1).setValue(new_ssid);
     }
@@ -130,6 +160,29 @@ function manage_midyear_2018_sheets()
     return(d);
   }
    
-  create_L2_L3_files();
+  // create_L2_L3_files();
+
+  function cleanup()
+  {
+    NUM_L2_L3_FILES = 25;
+    for (var i = 0; i < NUM_L2_L3_FILES; i++)
+    {
+      var trackerssid = Object.keys(trackerssid_to_importkey)[i];
+      var L2_L3_ir_key = trackerssid_to_importkey[trackerssid];
+      var sr_mgr_below = SpreadsheetApp.openById(trackerssid).getSheetByName(SHN_SR_MRG_AND_BELOW);
+      var dir_above = SpreadsheetApp.openById(trackerssid).getSheetByName(SHN_DIR_AND_ABOVE);
+      sr_mgr_below.insertColumns(13);
+      dir_above.insertColumns(14);
+      SpreadsheetApp.flush();
+      sr_mgr_below.getRange(1,1,1,1).setFormula("=QUERY(IMPORTRANGE(\"" + SSID_PROMO_RESPONSES + "\"," + IR_RANGE_SR_MGR_AND_BELOW + "),\"select * where " + IR_KEY_COL_INDEX_SR_MGR_AND_BELOW + "='" + L2_L3_ir_key + "'\")");
+      dir_above.getRange(1,1,1,1).setFormula("=QUERY(IMPORTRANGE(\"" + SSID_PROMO_RESPONSES + "\"," + IR_RANGE_DIR_AND_ABOVE + "),\"select * where " + IR_KEY_COL_INDEX_DIR_AND_ABOVE + "='" + L2_L3_ir_key + "'\")");
+      SpreadsheetApp.flush();
+      sr_mgr_below.hideColumns(13);
+      dir_above.hideColumns(14);
+      SpreadsheetApp.flush();
+
+    }
+  }
+  cleanup();
   
 }
