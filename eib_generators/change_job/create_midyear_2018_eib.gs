@@ -8,16 +8,23 @@
  * tml -- template
 **/
 
+// Identify specific first and last rows and columns to extract and number of rows/columns to extract
+var FIRST_ROW_EXTRACTED = 5;
+var LAST_ROW_EXTRACTED = 774;
+var FIRST_COL_EXTRACTED = 2;
+var LAST_COL_EXTRACTED = 26;
+var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
+var NUM_COLS_TO_EXTRACT = LAST_COL_EXTRACTED - FIRST_COL_EXTRACTED + 1;
+
 // Google file ids
-var FOLDER_ID_MAIN = "PLACEHOLDER"; // Folder: 
-var SSID_DATA = "PLACEHOLDER"; // File: 
-var SHN_DATA = "PLACEHOLDER"; // Sheet with data to transform into EIB
-var SSID_EIB_TML = "PLACEHOLDER"; // File: 
-var SHN_EIB_TAB_CHANGE_JOB = "PLACEHOLDER"; // Sheet name for Change Job tab in Change_Job EIB 
-var SHN_EIB_TAB_REQ_COMP_CHANGE = "PLACEHOLDER"; // Sheet name for Request Compensation Change tab in Change_Job EIB
+var FOLDER_ID_MAIN = "1C7r8RfsGBT5jk2-_wVWfOD5A0msIg59a"; // Folder: 
+var SSID_DATA = "1xJlu13lq0S6-WW7oelRE-CPmJXocbTn3MRAlcCM-_rQ"; // File: 
+var SHN_DATA = "Data"; // Sheet with data to transform into EIB
+var SSID_EIB_TML = "1sm-Vn4n2e89pzPe_-M8KzDCx5jjxKDvPlIWtn0ToY7Y"; // File: 
+var SHN_EIB_TAB_CHANGE_JOB = "Change Job"; // Sheet name for Change Job tab in Change_Job EIB 
+var SHN_EIB_TAB_PROPOSE_COMP_CHANGE = "Propose Compensation"; // Sheet name for Request Compensation Change tab in Change_Job EIB
 
 // Constants
-var NUM_COLUMN_HEADERS = 2;
 var NUM_COLS_IN_CHANGE_JOB_TAB = 52;
 var NUM_COLS_IN_PROPOSE_COMP_CHANGE_TAB = 103;
 
@@ -51,17 +58,58 @@ var indices =
   "Is_On_Individual_Target_Yes_No" : 24
 }
 
+function create_full_eib()
+{
+  // Create Change Job and Propose Compensation Change arrays
+  var eib_arrays = create_promo_eib_arrays();
+  array_eib_change_job = eib_arrays[0];
+  array_eib_propose_comp_change = eib_arrays[1];
+  var NUM_ROWS_TO_WRITE_CHANGE_JOB = array_eib_change_job.length;
+  var NUM_COLS_TO_WRITE_CHANGE_JOB = array_eib_change_job[0].length;
+  var NUM_ROWS_TO_WRITE_PROPOSE_COMP_CHANGE = array_eib_propose_comp_change.length;
+  var NUM_COLS_TO_WRITE_PROPOSE_COMP_CHANGE = array_eib_propose_comp_change[0].length;
+
+  // Create filename -- append current datetime in format yyyy-MM-dd HH_MM PDT
+  var datetimestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH_mm") + " PDT";
+  var filename = "HR1403375 - 2018 Mid-Year Promotions - " + datetimestamp;
+
+  // Get folder
+  var folder = DriveApp.getFolderById(FOLDER_ID_MAIN);
+
+  // Make copy of EIB template in folder, open copy, and write new values
+  var file_tml_cpy = DriveApp.getFileById(SSID_EIB_TML).makeCopy(filename, folder);
+  var ss_new_eib = SpreadsheetApp.openById(file_tml_cpy.getId());
+  var sheet_new_eib_change_job = ss_new_eib.getSheetByName(SHN_EIB_TAB_CHANGE_JOB);
+  var sheet_new_eib_propose_comp_change = ss_new_eib.getSheetByName(SHN_EIB_TAB_PROPOSE_COMP_CHANGE);
+  sheet_new_eib_change_job.getRange(6, 1, NUM_ROWS_TO_WRITE_CHANGE_JOB, NUM_COLS_TO_WRITE_CHANGE_JOB).setValues(array_eib_change_job);
+  sheet_new_eib_propose_comp_change.getRange(6, 1, NUM_ROWS_TO_WRITE_PROPOSE_COMP_CHANGE, NUM_COLS_TO_WRITE_PROPOSE_COMP_CHANGE).setValues(array_eib_propose_comp_change);
+  SpreadsheetApp.flush()
+
+  // Save new EIB as Excel file, and delete GSheet version
+  var url = "https://docs.google.com/feeds/download/spreadsheets/Export?key=" + file_tml_cpy.getId() + "&exportFormat=xlsx";
+  var params = 
+  {
+    method : "get",
+    headers : {"Authorization": "Bearer " + ScriptApp.getOAuthToken()},
+    muteHttpExceptions : true
+  };
+  var blob = UrlFetchApp.fetch(url, params).getBlob();
+  blob.setName(filename + ".xlsx");
+  var excel_new_eib = folder.createFile(blob);
+  file_tml_cpy.setTrashed(true);
+}
+
 
 function create_promo_eib_arrays()
 {
   // Get sheet with promotions data
-  var values_promos = SpreadsheetApp.openById(SSID_DATA).getSheetByName(SHN_DATA).getDataRange();
+  var values_promos = SpreadsheetApp.openById(SSID_DATA).getSheetByName(SHN_DATA).getRange(FIRST_ROW_EXTRACTED, FIRST_COL_EXTRACTED, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
 
   // Create empty 2D arrays for Change Job and Request Compensation Change EIB tabs
   var array_eib_change_job = [];
   var array_eib_propose_comp_change = [];
   var sskey = 1;
-  for (var i = 0+NUM_COLUMN_HEADERS; i < values_promos.length; i++)
+  for (var i = 0; i < values_promos.length; i++)
   {
     // Add details here
     var curr = values_promos[i];
