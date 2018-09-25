@@ -57,14 +57,19 @@ function create_promo_eib_arrays()
   // Get sheet with promotions data
   var values_promos = SpreadsheetApp.openById(SSID_DATA).getSheetByName(SHN_DATA).getDataRange();
 
-
   // Create empty 2D arrays for Change Job and Request Compensation Change EIB tabs
   var array_eib_change_job = [];
-  var array_eib_req_comp_change = [];
+  var array_eib_propose_comp_change = [];
+  var sskey = 1;
   for (var i = 0+NUM_COLUMN_HEADERS; i < values_promos.length; i++)
   {
     // Add details here
+    var curr = values_promos[i];
+    array_eib_change_job.push(create_change_job_tab_eib_row(sskey, curr)); // add job data to Change Job tab
+    array_eib_propose_comp_change.push(create_propose_comp_change_tab_eib_row(sskey, curr)); // add comp data to Propose Compensation Change tab
+    sskey++; // increment spreadsheet key
   }
+  return [array_eib_change_job, array_eib_propose_comp_change];
 }
 
 function create_change_job_tab_eib_row(sskey, promo)
