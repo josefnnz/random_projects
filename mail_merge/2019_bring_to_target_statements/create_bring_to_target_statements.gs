@@ -3,6 +3,8 @@ function create_bring_to_target_statements()
   // Google file ids
   var GOOGLE_ID_FOLDER_IVAN_MARKMAN = "1OhZUxrkJ3p8eGJW8GMQdxGx8Tcdt3NFO"; // Folder: Ivan Markman - 2019 Bring to Target Statements
   var GOOGLE_ID_FOLDER_ROSE_TSOU = "1HwbJ46ZIeZMQXB8KjLa-cJpeBrlbdwr5"; // Folder: Rose Tsou - 2019 Bring to Target Statements
+  var GOOGLE_ID_FOLDER_KELLY_LIANG = "1IH6IsH1Ku0A-XYIPeXpfalwhLsKIAitv"; // Folder: Kelly Liang - 2019 Bring to Target Statements
+  var GOOGLE_ID_FOLDER_JOANNA_LAMBERT = "1OF9oMk4sQoAlyAShrvLv7iI9-qJyYY5W"; // Folder: Joanna Lambert - 2019 Bring to Target Statements
   var GOOGLE_ID_HOURLY_TEMPLATE = "1PLQJabq_zSTmj_Li4wN6lFHvjnav4bVA4nQ3tsJPNnc";
   var GOOGLE_ID_SALARIED_TEMPLATE = "1mmroG97XTDEOwyG5h3jivctqxFJiYaLLNbg6Tl9JwNQ";
   var GOOGLE_ID_SS_MAIL_MERGE_DATA_SOURCE = "18bAU9MnCKGdsK8GPHAXLkIluXd1Syb0RmPIckOne5js"; // File: Mail Merge Data Source - 2019 Bring to Target Statements
@@ -35,6 +37,8 @@ function create_bring_to_target_statements()
   // Set folders where statements will be created
   var folder_ivan_markman = DriveApp.getFolderById(GOOGLE_ID_FOLDER_IVAN_MARKMAN);
   var folder_rose_tsou = DriveApp.getFolderById(GOOGLE_ID_FOLDER_ROSE_TSOU);
+  var folder_kelly_liang = DriveApp.getFolderById(GOOGLE_ID_FOLDER_KELLY_LIANG);
+  var folder_joanna_lambert = DriveApp.getFolderById(GOOGLE_ID_FOLDER_JOANNA_LAMBERT);
 
   // Set mail merge templates
   var gdoc_template_hourly = DriveApp.getFileById(GOOGLE_ID_HOURLY_TEMPLATE);
@@ -44,7 +48,7 @@ function create_bring_to_target_statements()
   var ees = SpreadsheetApp.openById(GOOGLE_ID_SS_MAIL_MERGE_DATA_SOURCE).getSheetByName(SHN_MAIL_MERGE_DATA_SOURCE);
 
   // Starting and Ending Rows of Table
-  var FIRST_COL_OF_DATA = 21;
+  var FIRST_COL_OF_DATA = 1;
   var FIRST_ROW_EXTRACTED = 1 * ees.getSheetValues(1, 22, 1, 1);
   var LAST_ROW_EXTRACTED = 1 * ees.getSheetValues(2, 22, 1, 1);
 
@@ -60,7 +64,7 @@ function create_bring_to_target_statements()
   {
     // Confirm user wants to run script
     var ui = SpreadsheetApp.getUi();
-    var response = ui.alert("Please check cells V1 and V2 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
+    var response = ui.alert("Please check cells W1 and W2 and confirm they capture the first and last employees on the spreadsheet. Click 'Ok' to continue to run the script. Click 'Cancel' or exit the prompt to kill the script.", ui.ButtonSet.OK_CANCEL);
     if (response !== ui.Button.OK) 
     {
      return;
@@ -94,7 +98,9 @@ function create_bring_to_target_statements()
       var L4 = curr[L4_CIDX];
 
       // Set correct folder and statement template for employee
-      var folder = (L2 === "Rose Tsou") ? folder_rose_tsou : folder_ivan_markman;      
+      var folder = (L2 === "Rose Tsou") ? folder_rose_tsou : folder_ivan_markman;
+      var folder = (L2 === "Kelly Liang") ? folder_kelly_liang : folder;
+      var folder = (L2 === "Joanna Lambert") ? folder_joanna_lambert : folder;
       var template = (hourly_or_salaried === "Hourly") ? gdoc_template_hourly : gdoc_template_salaried;
 
       // Copy the template
