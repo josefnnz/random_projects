@@ -1,11 +1,11 @@
 // identify rows and columns to extract
-var FIRST_ROW_EXTRACTED = 34;
-var LAST_ROW_EXTRACTED = 100;
+var FIRST_ROW_EXTRACTED = 4;
+var LAST_ROW_EXTRACTED = 8;
 var NUM_ROWS_EXTRACTED = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
 
 var FIRST_COLUMN_EXTRACTED = 1;
-var LAST_COLUMN_EXTRACTED = 12;
-var NUM_COLUMNS_EXTRACTS = LAST_COLUMN_EXTRACTED - FIRST_COLUMN_EXTRACTED;
+var LAST_COLUMN_EXTRACTED = 17;
+var NUM_COLUMNS_EXTRACTS = LAST_COLUMN_EXTRACTED - FIRST_COLUMN_EXTRACTED + 1;
 
 // set google file ids
 var SPREADSHEET_ID_CASH_RETENTION = "1ArvOJq-jObY_NUcnn_e6T8Gfs0oFG35F6x8HXH9LGzQ"; // file: 2020 Transitional LTI Cash Retentions (with HR) - HR2050151
@@ -44,7 +44,8 @@ var COLUMN_INDEX_L4 = 15;
 var COLUMN_INDEX_FILENAME = 16;
 
 // mail merge status column index in sheet
-var NOTES_COL_INDEX = 37;
+var COLUMN_INDEX_NOTES = 18;
+var COLUMN_INDEX_LINK_TO_AGREEMENT = 19;
 
 function mail_merge() 
 {
@@ -77,7 +78,7 @@ function mail_merge()
     // make file copy of template in l3 folder. create new l3 folder if inexistent
     if (L2 === "") { L2 = "Direct Report to Guru Gowrappan"; }
     var L2_subfolders = folder_cash_retention_agreements.getFoldersByName(L2);
-    var L2_folder = (L2_subfolders.hasNext()) ? L2_subfolders.next() : folder_memos.createFolder(L2);
+    var L2_folder = (L2_subfolders.hasNext()) ? L2_subfolders.next() : folder_cash_retention_agreements.createFolder(L2);
     
     if (L2 === "") { L3 = "Direct Report to Guru Gowrappan"; }
     else if (L3 === "") { L3 = "Direct Report to " + L2; }
@@ -88,7 +89,8 @@ function mail_merge()
     var subfiles = folder_destination.getFilesByName(filename);
     if (subfiles.hasNext())
     {
-      sheet_cash_retention_employees.getRange(FIRST_ROW_EXTRACTED+row, NOTES_COL_INDEX).setValue("Agreement already exists. Id: " + subfiles.next().getId());
+      sheet_cash_retention_employees.getRange(FIRST_ROW_EXTRACTED+row, COLUMN_INDEX_NOTES).setValue("Agreement already exists");
+      sheet_cash_retention_employees.getRange(FIRST_ROW_EXTRACTED+row, COLUMN_INDEX_LINK_TO_AGREEMENT).setValue("https://drive.google.com/a/oath.com/file/d/" + subfiles.next().getId() + "/view?usp=sharing");
     }
     else
     {
@@ -110,7 +112,7 @@ function mail_merge()
       body.replaceText("{{Currency}}", currency);
       body.replaceText("{{Total Amount}}", total_amount);
       body.replaceText("{{Payment 1}}", payment_1);
-      body.replaceText("{{Payment 2}} ", payment_2);
+      body.replaceText("{{Payment 2}}", payment_2);
       body.replaceText("{{Emp ID}}", employee_id);
 
       doc_new_agreement.saveAndClose();
@@ -120,7 +122,8 @@ function mail_merge()
       pdf_version.setName(filename);
       file_new_agreement.setTrashed(true);
       
-      sheet_cash_retention_employees.getRange(FIRST_ROW_EXTRACTED+row, NOTES_COL_INDEX).setValue("Agreement created. Id: " + pdf_version.getId());
+      sheet_cash_retention_employees.getRange(FIRST_ROW_EXTRACTED+row, COLUMN_INDEX_NOTES).setValue("New agreement created");
+      sheet_cash_retention_employees.getRange(FIRST_ROW_EXTRACTED+row, COLUMN_INDEX_LINK_TO_AGREEMENT).setValue("https://drive.google.com/a/oath.com/file/d/" + pdf_version.getId() + "/view?usp=sharing");
     }
   }
 }
