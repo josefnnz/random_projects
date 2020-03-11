@@ -1,18 +1,21 @@
+// set google file ids
+var SPREADSHEET_ID_CASH_RETENTION = "1ArvOJq-jObY_NUcnn_e6T8Gfs0oFG35F6x8HXH9LGzQ"; // file: 2020 Transitional LTI Cash Retentions (with HR) - HR2050151
+var SHEET_NAME_GENERATE_AGREEMENTS = "GENERATE_AGREEMENTS";
+var SHEET_NAME_CASH_RETENTION_EMPLOYEES = "Transition Cash Retention";
+var FOLDER_ID_CASH_RETENTION_AGREEMENTS = "1l1s2FgpEixQqSr_MiZb4DcL0vbGc7Cx4"; // folder: HR2050151 - 2020 Cash Retention Agreements
+var TEMPLATE_ID_USA_RETENTION_2_INSTALLMENTS = "1mXjUDU98a3yM_hrdRjnWH7ktP-lGZHnSp_fNMXZBqds";
+var TEMPLATE_ID_INTL_RETENTION_2_INSTALLMENTS = "15YwJK895F2eXBAtpXyYch9QIK5b9rw4eZrhcCPmfCRo";
+
 // identify rows and columns to extract
-var FIRST_ROW_EXTRACTED = 4;
-var LAST_ROW_EXTRACTED = 8;
+var sheet_generate_documents = SpreadsheetApp.openById(SPREADSHEET_ID_CASH_RETENTION).getSheetByName(SHEET_NAME_GENERATE_AGREEMENTS);
+var FIRST_ROW_EXTRACTED = 1 * sheet_generate_documents.getSheetValues(16, 2, 1, 1);
+var LAST_ROW_EXTRACTED = 1 * sheet_generate_documents.getSheetValues(17, 2, 1, 1);
 var NUM_ROWS_EXTRACTED = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
 
 var FIRST_COLUMN_EXTRACTED = 1;
 var LAST_COLUMN_EXTRACTED = 17;
 var NUM_COLUMNS_EXTRACTS = LAST_COLUMN_EXTRACTED - FIRST_COLUMN_EXTRACTED + 1;
 
-// set google file ids
-var SPREADSHEET_ID_CASH_RETENTION = "1ArvOJq-jObY_NUcnn_e6T8Gfs0oFG35F6x8HXH9LGzQ"; // file: 2020 Transitional LTI Cash Retentions (with HR) - HR2050151
-var SHEET_NAME_CASH_RETENTION_EMPLOYEES = "Transition Cash Retention";
-var FOLDER_ID_CASH_RETENTION_AGREEMENTS = "1l1s2FgpEixQqSr_MiZb4DcL0vbGc7Cx4"; // folder: HR2050151 - 2020 Cash Retention Agreements
-var TEMPLATE_ID_USA_RETENTION_2_INSTALLMENTS = "1mXjUDU98a3yM_hrdRjnWH7ktP-lGZHnSp_fNMXZBqds";
-var TEMPLATE_ID_INTL_RETENTION_2_INSTALLMENTS = "15YwJK895F2eXBAtpXyYch9QIK5b9rw4eZrhcCPmfCRo";
 
 // get folder where all L2/L3 folders will be created
 var folder_cash_retention_agreements = DriveApp.getFolderById(FOLDER_ID_CASH_RETENTION_AGREEMENTS);
@@ -49,6 +52,14 @@ var COLUMN_INDEX_LINK_TO_AGREEMENT = 19;
 
 function mail_merge() 
 {
+  // Confirm user wants to run script
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert("Please check cells B1 and B2 and confirm they capture the range of employees you want to create agreements for. Click 'Ok' to continue to run the script. Click 'Cancel' to exit the prompt and kill the script.", ui.ButtonSet.OK_CANCEL);
+  if (response !== ui.Button.OK) 
+  {
+   return;
+  }
+
   // values array starts indexing at [0][0]
   for (var row = 0; row < NUM_EMPLOYEES; row++) 
   {
