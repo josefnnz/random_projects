@@ -60,7 +60,7 @@ var LAST_ROW_EXTRACTED = 3; // last VZ job
 var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
 var NUM_COLS_TO_EXTRACT = LAST_COL_EXTRACTED - FIRST_COL_EXTRACTED + 1;
 
-var NUM_EIB_COLS = 99;
+var NUM_EIB_COLS = 94; // compensation grade is last column we use -- ignore further columns
 var NUM_EIB_ROWS_PER_JOB = 30;
 var NUM_EIB_ROWS = NUM_ROWS_TO_EXTRACT * NUM_EIB_ROWS_PER_JOB;
 
