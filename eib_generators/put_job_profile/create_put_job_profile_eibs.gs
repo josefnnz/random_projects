@@ -56,9 +56,13 @@ var VZ_UNION_JOB = 22;
 var FIRST_COL_EXTRACTED = VZ_JOB_CODE;
 var LAST_COL_EXTRACTED = VZ_UNION_JOB;
 var FIRST_ROW_EXTRACTED = 2;
-var LAST_ROW_EXTRACTED = 5;
+var LAST_ROW_EXTRACTED = 3;
 var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
 var NUM_COLS_TO_EXTRACT = LAST_COL_EXTRACTED - FIRST_COL_EXTRACTED + 1;
+
+var NUM_EIB_COLS = 99;
+var NUM_EIB_ROWS_PER_JOB = 30;
+var NUM_EIB_ROWS = NUM_ROWS_TO_EXTRACT * NUM_EIB_ROWS_PER_JOB;
 
 function create_put_job_profile_eibs()
 {
@@ -66,6 +70,24 @@ function create_put_job_profile_eibs()
 	var sheet_jobs = SpreadsheetApp.openById(GOOGLE_ID_SS_VZ_JOB_PROFILES).getSheetByName(SHEET_NAME_VZ_JOB_PROFILES);
 	// extract VZ job profiles
 	var values_jobs = sheet_jobs.getRange(FIRST_ROW_EXTRACTED, FIRST_COL_EXTRACTED, NUM_ROWS_TO_EXTRACT, NUM_COLS_TO_EXTRACT).getValues();
-	
+	var NUM_JOBS = values_jobs.length;
+
+	var eib = new Array(NUM_EIB_ROWS);
+	for (var i = 0; i < NUM_EIB_ROWS; i++)
+	{
+		eib[i] = new Array(NUM_EIB_COLS);
+	}
+
+	for (var row = 0; row < NUM_JOBS; row++)
+	{
+		// extract current job
+		var curr = values_jobs[row];
+
+		eib[row][10] = curr[VZ_JOB_CODE];
+	}
+
+	console.log(eib);
 }
+
+create_put_job_profile_eibs();
 
