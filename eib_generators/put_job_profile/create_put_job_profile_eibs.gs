@@ -8,7 +8,7 @@ var SHEET_NAME_EIB = "Job Profile";
 var CHOOSE_EIB_TEMPLATE_FILE = GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05;
 
 
-var EIB_EFFECTIVE_DATE = "2020-12-09";
+var EIB_EFFECTIVE_DATE = "2020-01-01";
 var FIRST_COL_EXTRACTED = 1; // VZ job code column
 var LAST_COL_EXTRACTED = 22; // VZ union job column
 var FIRST_ROW_EXTRACTED = 7; // first VZ job
