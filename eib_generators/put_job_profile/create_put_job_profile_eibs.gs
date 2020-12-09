@@ -1,8 +1,18 @@
+// eib google sheet templates
+var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_01 = "1N1maf4tsbsDp-9GDaD9GmjApdn1isNnbMeFYM89IBlg";
+var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_02 = "1ldqvFAVzHFaJZ-CeZjLmnGSdKa6iS_MHAcybflWadsc";
+var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_03 = "1Q5xQUGzV1T6rjQWHUC13phqbaEFPh1pFNNLMCrInKSI";
+var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_04 = "1QJE9un4M4K9lZJY_z51SdQRGMAG8iX3OkdlT8F7BdTs";
+var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05 = "1Y2uYLAuxLmAvUitPhnOha4B3YToSQdHLwUppppKt1vo";
+var SHEET_NAME_EIB = "Job Profile";
+var CHOOSE_EIB_TEMPLATE_FILE = GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05;
+
+
 var EIB_EFFECTIVE_DATE = "2020-12-09";
 var FIRST_COL_EXTRACTED = 1; // VZ job code column
 var LAST_COL_EXTRACTED = 22; // VZ union job column
 var FIRST_ROW_EXTRACTED = 7; // first VZ job
-var LAST_ROW_EXTRACTED = 1007; // last VZ job
+var LAST_ROW_EXTRACTED = 50; // last VZ job
 var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
 var NUM_COLS_TO_EXTRACT = LAST_COL_EXTRACTED - FIRST_COL_EXTRACTED + 1;
 var FIRST_ROW_EIB = 6;
@@ -11,6 +21,8 @@ var LAST_COL_EIB = 94;
 var NUM_EIB_COLS = LAST_COL_EIB - FIRST_COL_EIB + 1; // compensation grade is last column we use -- ignore further columns
 var NUM_EIB_ROWS_PER_JOB = 30;
 var NUM_EIB_ROWS = NUM_ROWS_TO_EXTRACT * NUM_EIB_ROWS_PER_JOB;
+var MAX_JOBS_PER_EIB = 10;
+var MAX_ROWS_PER_EIB = MAX_JOBS_PER_EIB * NUM_EIB_ROWS_PER_JOB;
 
 // put_job_profile eib template array indices (column index minus one)
 var FIELDS = 1 - 1;
@@ -46,12 +58,9 @@ var ROW_ID_WORKERS_COMPENSATION_CODE = 41 - 1;
 var WORKERS_COMPENSATION_CODE = 42 - 1;
 var COMPENSATION_GRADE = 94 - 1;
 
-
-
 // spreadsheet template fields and array indices
 var GOOGLE_ID_SS_VZ_JOB_PROFILES = "13yag7K9-IgPjKkEdl4EYFiHsXDiW3uqHPvRwq0cCiuE";
 var SHEET_NAME_VZ_JOB_PROFILES = "IMPORT_Job_Profiles";
-var SHEET_NAME_EIB = "Job Profile";
 var VZ_JOB_CODE = 2 - 1;
 var VZ_JOB_PROFILE_NAME = 3 - 1;
 var VZ_JOB_TITLE_DEFAULT = 4 - 1;
@@ -129,7 +138,7 @@ function create_put_job_profile_eibs()
 		eib[row_eib][JOB_EXEMPT] = curr[VZ_FLSA_STATUS];
 		eib[row_eib][COMPENSATION_GRADE] = curr[VZ_COMPENSATION_GRADE];
 		// fill in extra repetitive rows
-		for (var j = 0; j < (NUM_EIB_ROWS_PER_JOB-1); j++)
+		for (var j = 0; j < (NUM_EIB_ROWS_PER_JOB - 1); j++)
 		{
 			row_eib++;
 			eib[row_eib][SPREADSHEET_KEY] = curr_spreadsheet_key; // fill in spreadsheet key column
@@ -141,9 +150,63 @@ function create_put_job_profile_eibs()
 	}
 
 	// get empty eib sheet
-	var sheet_eib = SpreadsheetApp.openById(GOOGLE_ID_SS_VZ_JOB_PROFILES).getSheetByName(SHEET_NAME_EIB);
+	var sheet_eib = SpreadsheetApp.openById(CHOOSE_EIB_TEMPLATE_FILE).getSheetByName(SHEET_NAME_EIB);
 	sheet_eib.getRange(FIRST_ROW_EIB, FIRST_COL_EIB, NUM_EIB_ROWS, NUM_EIB_COLS).setValues(eib);
-	// SpreadsheetApp.flush();
+
+	// // get fill eib templates
+	// var num_rows_to_set = (NUM_JOBS < (1 * MAX_JOBS_PER_EIB)) ? ((NUM_JOBS - (0 * MAX_JOBS_PER_EIB)) * NUM_EIB_ROWS_PER_JOB) : MAX_ROWS_PER_EIB;
+	// SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_01).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, num_rows_to_set, NUM_EIB_COLS).setValues(eib.slice((0 * MAX_ROWS_PER_EIB), (0 * MAX_ROWS_PER_EIB) + num_rows_to_set));
+	// if (NUM_JOBS > (1 * MAX_JOBS_PER_EIB))
+	// {
+	// 	num_rows_to_set = (NUM_JOBS < (2 * MAX_JOBS_PER_EIB)) ? ((NUM_JOBS - (1 * MAX_JOBS_PER_EIB)) * NUM_EIB_ROWS_PER_JOB) : MAX_ROWS_PER_EIB;
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_02).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, num_rows_to_set, NUM_EIB_COLS).setValues(eib.slice((1 * MAX_ROWS_PER_EIB), (1 * MAX_ROWS_PER_EIB) + num_rows_to_set));
+	// }
+	// if (NUM_JOBS > (2 * MAX_JOBS_PER_EIB))
+	// {
+	// 	num_rows_to_set = (NUM_JOBS < (3 * MAX_JOBS_PER_EIB)) ? ((NUM_JOBS - (2 * MAX_JOBS_PER_EIB)) * NUM_EIB_ROWS_PER_JOB) : MAX_ROWS_PER_EIB;
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_03).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, num_rows_to_set, NUM_EIB_COLS).setValues(eib.slice((2 * MAX_ROWS_PER_EIB), (2 * MAX_ROWS_PER_EIB) + num_rows_to_set));
+	// }
+	// if (NUM_JOBS > (3 * MAX_JOBS_PER_EIB))
+	// {
+	// 	num_rows_to_set = (NUM_JOBS < (4 * MAX_JOBS_PER_EIB)) ? ((NUM_JOBS - (3 * MAX_JOBS_PER_EIB)) * NUM_EIB_ROWS_PER_JOB) : MAX_ROWS_PER_EIB;
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_04).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, num_rows_to_set, NUM_EIB_COLS).setValues(eib.slice((3 * MAX_ROWS_PER_EIB), (3 * MAX_ROWS_PER_EIB) + num_rows_to_set));
+	// }
+	// if (NUM_JOBS > (4 * MAX_JOBS_PER_EIB))
+	// {
+	// 	num_rows_to_set = (NUM_JOBS < (5 * MAX_JOBS_PER_EIB)) ? ((NUM_JOBS - (4 * MAX_JOBS_PER_EIB)) * NUM_EIB_ROWS_PER_JOB) : MAX_ROWS_PER_EIB;
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, num_rows_to_set, NUM_EIB_COLS).setValues(eib.slice((4 * MAX_ROWS_PER_EIB), (4 * MAX_ROWS_PER_EIB) + num_rows_to_set));
+	// }
+
+	// var num_rows_to_set = NUM_JOBS
+	// if (NUM_JOBS < MAX_JOBS_PER_EIB)
+	// {
+
+	// }
+	// else if (NUM_JOBS < (2 * MAX_JOBS_PER_EIB))
+	// {
+
+	// }
+	// else if (NUM_JOBS < (3 * MAX_JOBS_PER_EIB))
+	// {
+
+	// }
+	// else if (NUM_JOBS < (4 * MAX_JOBS_PER_EIB))
+	// {
+
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_01).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(0 * MAX_ROWS_PER_EIB, 1 * MAX_ROWS_PER_EIB - 1));
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_02).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(1 * MAX_ROWS_PER_EIB, 2 * MAX_ROWS_PER_EIB - 1));
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_03).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(2 * MAX_ROWS_PER_EIB, 3 * MAX_ROWS_PER_EIB - 1));
+	// 	// SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_04).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(3 * MAX_ROWS_PER_EIB, 4 * MAX_ROWS_PER_EIB - 1));
+	// 	// SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(4 * MAX_ROWS_PER_EIB, eib.length - 1));
+	// }
+	// else if (NUM_JOBS < (5 * MAX_JOBS_PER_EIB))
+	// {
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_01).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(0 * MAX_ROWS_PER_EIB, 1 * MAX_ROWS_PER_EIB - 1));
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_02).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(1 * MAX_ROWS_PER_EIB, 2 * MAX_ROWS_PER_EIB - 1));
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_03).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(2 * MAX_ROWS_PER_EIB, 3 * MAX_ROWS_PER_EIB - 1));
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_04).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(3 * MAX_ROWS_PER_EIB, 4 * MAX_ROWS_PER_EIB - 1));
+	// 	SpreadsheetApp.openById(GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05).getSheetByName(SHEET_NAME_EIB).getRange(FIRST_ROW_EIB, FIRST_COL_EIB, MAX_ROWS_PER_EIB, NUM_EIB_COLS).setValues(eib.splice(4 * MAX_ROWS_PER_EIB, eib.length - 1));
+	// }
 }
 
 create_put_job_profile_eibs();
