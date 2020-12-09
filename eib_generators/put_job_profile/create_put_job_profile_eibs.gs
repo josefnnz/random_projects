@@ -5,7 +5,10 @@ var FIRST_ROW_EXTRACTED = 3; // first VZ job
 var LAST_ROW_EXTRACTED = 4; // last VZ job
 var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
 var NUM_COLS_TO_EXTRACT = LAST_COL_EXTRACTED - FIRST_COL_EXTRACTED + 1;
-var NUM_EIB_COLS = 94; // compensation grade is last column we use -- ignore further columns
+var FIRST_ROW_EIB = 6;
+var FIRST_COL_EIB = 1;
+var LAST_COL_EIB = 94;
+var NUM_EIB_COLS = LAST_COL_EIB - FIRST_COL_EIB + 1; // compensation grade is last column we use -- ignore further columns
 var NUM_EIB_ROWS_PER_JOB = 30;
 var NUM_EIB_ROWS = NUM_ROWS_TO_EXTRACT * NUM_EIB_ROWS_PER_JOB;
 
@@ -67,6 +70,8 @@ var VZ_WORK_SHIFT_REQUIRED = 20 - 1;
 var VZ_PUBLIC_JOB = 21 - 1;
 var VZ_UNION_JOB = 22 - 1;
 
+var pay_rate_type_countries_non_usa = ["AU","BE","BR","CA","CN","DK","FR","DE","HK","IN","ID","IE","IL","IT","JP","KR","LU","NL","NZ","NO","RO","SG","ES","SE","CH","TW","TH","GB","VN"];
+
 function create_put_job_profile_eibs()
 {
 	// load sheet with VZ job profiles
@@ -86,16 +91,11 @@ function create_put_job_profile_eibs()
 	{
 		// extract current job
 		var curr = values_jobs[row];
-
-		console.log(NUM_EIB_ROWS_PER_JOB);
-		console.log(row);
-
-
 		row_eib = NUM_EIB_ROWS_PER_JOB * row;
 
-		console.log(row_eib);
-
 		// multi spreadsheet key
+		curr_spreadsheet_key = row+1;
+		eib[row_eib][SPREADSHEET_KEY] = curr_spreadsheet_key;
 		eib[row_eib][ADD_ONLY] = "Y";
 		eib[row_eib][JOB_CODE] = curr[VZ_JOB_CODE];
 		eib[row_eib][EFFECTIVE_DATE] = EIB_EFFECTIVE_DATE;
@@ -108,23 +108,41 @@ function create_put_job_profile_eibs()
 		eib[row_eib][MANAGEMENT_LEVEL] = curr[VZ_MANAGEMENT_LEVEL];
 		eib[row_eib][JOB_CATEGORY] = curr[VZ_JOB_CATEGORY];
 		eib[row_eib][JOB_LEVEL] = curr[VZ_JOB_LEVEL];
-		eib[row_eib][ROW_ID_JOB_FAMILY] = "1";
+		eib[row_eib][ROW_ID_JOB_FAMILY] = 1;
 		eib[row_eib][DELETE_JOB_FAMILY] = "N";
 		eib[row_eib][JOB_FAMILY] = curr[VZ_JOB_FAMILY];
 		// multi restrict to country
-		// multi job classification
-		// multi pay rate type
+		eib[row_eib][ROW_ID_JOB_CLASSIFICATION] = 1;
+		eib[row_eib][DELETE_JOB_CLASSIFICATION] = "N";
+		eib[row_eib][JOB_CLASSIFICATIONS] = curr[VZ_JOB_CLASSIFICATION_EEO];
+		eib[row_eib+1][ROW_ID_JOB_CLASSIFICATION] = 2; // add 2nd job classification
+		eib[row_eib+1][DELETE_JOB_CLASSIFICATION] = "N"; // add 2nd job classification
+		eib[row_eib+1][JOB_CLASSIFICATIONS] = curr[VZ_JOB_CLASSIFICATION_AAP]; // add 2nd job classification
+		eib[row_eib][ROW_ID_PAY_RATE_TYPE] = 1;
+		eib[row_eib][DELETE_PAY_RATE_TYPE] = "N";
+		eib[row_eib][PAY_RATE_TYPE_COUNTRY] = "US";
+		eib[row_eib][PAY_RATE_TYPE] = curr[VZ_PAY_RATE_TYPE];
 		// multi workers compensation code
 		eib[row_eib][ROW_ID_JOB_EXEMPT] = "1";
 		eib[row_eib][DELETE_JOB_EXEMPT] = "N";
 		eib[row_eib][JOB_EXEMPT_LOCATION_CONTEXT] = "US";
 		eib[row_eib][JOB_EXEMPT] = curr[VZ_FLSA_STATUS];
 		eib[row_eib][COMPENSATION_GRADE] = curr[VZ_COMPENSATION_GRADE];
+		// fill in extra repetitive rows
+		for (var j = 0; j < (NUM_EIB_ROWS_PER_JOB-1); j++)
+		{
+			row_eib++;
+			eib[row_eib][SPREADSHEET_KEY] = curr_spreadsheet_key; // fill in spreadsheet key column
+			eib[row_eib][ROW_ID_PAY_RATE_TYPE] = j+2;
+			eib[row_eib][DELETE_PAY_RATE_TYPE] = "N";
+			eib[row_eib][PAY_RATE_TYPE_COUNTRY] = pay_rate_type_countries_non_usa[j];
+			eib[row_eib][PAY_RATE_TYPE] = "Salaried";
+		}
 	}
 
 	// get empty eib sheet
 	var sheet_eib = SpreadsheetApp.openById(GOOGLE_ID_SS_VZ_JOB_PROFILES).getSheetByName(SHEET_NAME_EIB);
-	sheet_eib.getRange(6, 1, 60, 94).setValues(eib);
+	sheet_eib.getRange(FIRST_ROW_EIB, FIRST_COL_EIB, NUM_EIB_ROWS, NUM_EIB_COLS).setValues(eib);
 	SpreadsheetApp.flush();
 
 }
