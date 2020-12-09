@@ -143,8 +143,7 @@ function create_put_job_profile_eibs()
 	// get empty eib sheet
 	var sheet_eib = SpreadsheetApp.openById(GOOGLE_ID_SS_VZ_JOB_PROFILES).getSheetByName(SHEET_NAME_EIB);
 	sheet_eib.getRange(FIRST_ROW_EIB, FIRST_COL_EIB, NUM_EIB_ROWS, NUM_EIB_COLS).setValues(eib);
-	SpreadsheetApp.flush();
-
+	// SpreadsheetApp.flush();
 }
 
 create_put_job_profile_eibs();
