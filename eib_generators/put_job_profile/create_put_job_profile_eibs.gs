@@ -5,14 +5,14 @@ var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_03 = "1Q5xQUGzV1T6rjQWHUC13phqbaEFPh1pFNNL
 var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_04 = "1QJE9un4M4K9lZJY_z51SdQRGMAG8iX3OkdlT8F7BdTs";
 var GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05 = "1Y2uYLAuxLmAvUitPhnOha4B3YToSQdHLwUppppKt1vo";
 var SHEET_NAME_EIB = "Job Profile";
-var CHOOSE_EIB_TEMPLATE_FILE = GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_05;
+var CHOOSE_EIB_TEMPLATE_FILE = GOOGLE_ID_SS_PUT_JOB_PROFILE_PART_01;
 
 
-var EIB_EFFECTIVE_DATE = "2020-01-01";
+var EIB_EFFECTIVE_DATE = "1900-01-01";
 var FIRST_COL_EXTRACTED = 1; // VZ job code column
 var LAST_COL_EXTRACTED = 22; // VZ union job column
-var FIRST_ROW_EXTRACTED = 7; // first VZ job
-var LAST_ROW_EXTRACTED = 50; // last VZ job
+var FIRST_ROW_EXTRACTED = 4; // first VZ job
+var LAST_ROW_EXTRACTED = 10; // last VZ job
 var NUM_ROWS_TO_EXTRACT = LAST_ROW_EXTRACTED - FIRST_ROW_EXTRACTED + 1;
 var NUM_COLS_TO_EXTRACT = LAST_COL_EXTRACTED - FIRST_COL_EXTRACTED + 1;
 var FIRST_ROW_EIB = 6;
@@ -102,7 +102,6 @@ function create_put_job_profile_eibs()
 		var curr = values_jobs[row];
 		row_eib = NUM_EIB_ROWS_PER_JOB * row;
 
-		// multi spreadsheet key
 		curr_spreadsheet_key = row+1;
 		eib[row_eib][SPREADSHEET_KEY] = curr_spreadsheet_key;
 		eib[row_eib][ADD_ONLY] = "Y";
@@ -131,7 +130,8 @@ function create_put_job_profile_eibs()
 		eib[row_eib][DELETE_PAY_RATE_TYPE] = "N";
 		eib[row_eib][PAY_RATE_TYPE_COUNTRY] = "US";
 		eib[row_eib][PAY_RATE_TYPE] = curr[VZ_PAY_RATE_TYPE];
-		// multi workers compensation code
+		eib[row_eib][ROW_ID_WORKERS_COMPENSATION_CODE] = 1;
+		eib[row_eib][WORKERS_COMPENSATION_CODE] = curr[VZ_WORKERS_COMPENSATION_CODE];
 		eib[row_eib][ROW_ID_JOB_EXEMPT] = "1";
 		eib[row_eib][DELETE_JOB_EXEMPT] = "N";
 		eib[row_eib][JOB_EXEMPT_LOCATION_CONTEXT] = "US";
